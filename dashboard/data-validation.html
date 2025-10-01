@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Validation Center</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Segoe UI, Inter, Arial, sans-serif;
+            background: #F5F5F5;
+            min-height: 100vh;
+            padding: 16px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #FFFFFF;
+            border-radius: 8px;
+            box-shadow: 0px 4px 12px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+        .header {
+            background: #013E3F;
+            color: #FFFFFF;
+            padding: 32px;
+            text-align: center;
+            position: relative;
+        }
+        .nav-btn {
+            position: absolute;
+            left: 32px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #009091;
+            color: #FFFFFF;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .nav-btn:hover {
+            background: #006768;
+        }
+        .analysis-btn {
+            position: absolute;
+            right: 32px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #009091;
+            color: #FFFFFF;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .analysis-btn:hover {
+            background: #006768;
+        }
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .header p {
+            font-size: 16px;
+            font-weight: 400;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 32px;
+        }
+        .validation-section {
+            background: #FFFFFF;
+            border: 2px solid #013E3F;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #013E3F;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .section-icon {
+            width: 32px;
+            height: 32px;
+            background: #013E3F;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #FFFFFF;
+            font-size: 18px;
+        }
+        .section-description {
+            color: #666666;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+        .validation-content {
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #F5F5F5;
+            border-radius: 4px;
+            color: #999999;
+            font-style: italic;
+        }
+        #dataStatus {
+            padding: 16px 24px;
+            background: #F5F5F5;
+            text-align: center;
+            font-size: 14px;
+            color: #666666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="index.html" class="nav-btn">← Dashboard</a>
+            <a href="analysis.html" class="analysis-btn">Analysis →</a>
+            <h1>Data Validation Center</h1>
+            <p>Quality checks and data integrity monitoring</p>
+        </div>
+
+        <div id="dataStatus">Loading validation data...</div>
+
+        <div class="content">
+            <!-- Missing Values Section -->
+            <div class="validation-section">
+                <div class="section-title">
+                    <div class="section-icon">1</div>
+                    <span>Missing Values</span>
+                </div>
+                <div class="section-description">
+                    Identify periods and metrics with incomplete data
+                </div>
+                <div class="validation-content" id="missingValuesContent">
+                    Analysis coming soon...
+                </div>
+            </div>
+
+            <!-- Statistical Deviations Section -->
+            <div class="validation-section">
+                <div class="section-title">
+                    <div class="section-icon">2</div>
+                    <span>Statistical Deviations</span>
+                </div>
+                <div class="section-description">
+                    Detect values that significantly deviate from the mean
+                </div>
+                <div class="validation-content" id="deviationsContent">
+                    Analysis coming soon...
+                </div>
+            </div>
+
+            <!-- Data Consistency Section -->
+            <div class="validation-section">
+                <div class="section-title">
+                    <div class="section-icon">3</div>
+                    <span>Data Consistency</span>
+                </div>
+                <div class="section-description">
+                    Check for logical inconsistencies and data quality issues
+                </div>
+                <div class="validation-content" id="consistencyContent">
+                    Analysis coming soon...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load data
+        async function loadValidationData() {
+            try {
+                const timestamp = new Date().getTime();
+                const response = await fetch(`/data/processed/dashboard_data.json?t=${timestamp}`);
+                if (!response.ok) throw new Error('Data file not found');
+
+                const data = await response.json();
+
+                document.getElementById('dataStatus').innerHTML =
+                    'Data loaded successfully - Last updated: ' + new Date().toLocaleString();
+
+                console.log('Validation data loaded:', data);
+
+                // TODO: Implement validation logic here
+
+            } catch (error) {
+                console.error('Error loading data:', error);
+                document.getElementById('dataStatus').innerHTML =
+                    'Error loading data. Please run: python scripts/fetch_from_sheets.py <spreadsheet_id>';
+            }
+        }
+
+        // Load data on page load
+        loadValidationData();
+    </script>
+</body>
+</html>

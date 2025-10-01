@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KPI Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Segoe UI, Inter, Arial, sans-serif;
+            background: #F5F5F5;
+            min-height: 100vh;
+            padding: 16px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #FFFFFF;
+            border-radius: 8px;
+            box-shadow: 0px 4px 12px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+        .header {
+            background: #013E3F;
+            color: #FFFFFF;
+            padding: 32px;
+            text-align: center;
+            position: relative;
+        }
+        .validation-btn {
+            position: absolute;
+            right: 32px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #009091;
+            color: #FFFFFF;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .validation-btn:hover {
+            background: #006768;
+        }
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .header p {
+            font-size: 16px;
+            font-weight: 400;
+            opacity: 0.9;
+        }
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            padding: 24px;
+            background: #F5F5F5;
+        }
+        .kpi-card {
+            background: #FFFFFF;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0px 1px 3px rgba(0,0,0,0.1);
+            border: 2px solid #013E3F;
+            text-align: center;
+        }
+        .kpi-label {
+            font-size: 16px;
+            color: #666666;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            font-weight: 500;
+            text-align: center;
+        }
+        .kpi-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #013E3F;
+            text-align: center;
+        }
+        .charts {
+            padding: 24px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 24px;
+            background: #FFFFFF;
+        }
+        .chart-container {
+            background: #FFFFFF;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0px 1px 3px rgba(0,0,0,0.1);
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+        .chart-title {
+            font-size: 16px;
+            margin-bottom: 16px;
+            color: #222222;
+            font-weight: 500;
+            flex-shrink: 0;
+        }
+        .chart-wrapper {
+            position: relative;
+            flex: 1;
+            min-height: 0;
+        }
+        .chart-wrapper canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100% !important;
+            height: 100% !important;
+        }
+        #dataStatus {
+            padding: 16px 24px;
+            background: #F5F5F5;
+            text-align: center;
+            font-size: 14px;
+            color: #666666;
+        }
+
+        .date-controls {
+            padding: 16px 24px;
+            background: #FFFFFF;
+            border-bottom: 1px solid #E0E0E0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+        .date-control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .date-control-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #666666;
+            min-width: 60px;
+        }
+        .date-select {
+            padding: 8px 12px;
+            border: 2px solid #013E3F;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: Segoe UI, Inter, Arial, sans-serif;
+            color: #222222;
+            background: #FFFFFF;
+            min-width: 120px;
+        }
+        .date-select:focus {
+            outline: none;
+            box-shadow: 0px 0px 0px 2px rgba(1, 62, 63, 0.2);
+        }
+        .reset-btn {
+            padding: 8px 16px;
+            background: #013E3F;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            font-family: Segoe UI, Inter, Arial, sans-serif;
+        }
+        .reset-btn:hover {
+            background: #006768;
+        }
+
+        .table-section {
+            padding: 24px;
+            background: #FFFFFF;
+        }
+        .table-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #222222;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        .table-container {
+            background: #FFFFFF;
+            border-radius: 8px;
+            box-shadow: 0px 1px 3px rgba(0,0,0,0.1);
+            border: 2px solid #013E3F;
+            overflow-x: auto;
+            overflow-y: hidden;
+            max-height: 600px;
+        }
+        .data-table {
+            width: max-content;
+            min-width: 100%;
+            border-collapse: collapse;
+            font-family: Segoe UI, Inter, Arial, sans-serif;
+        }
+        .data-table th {
+            background: #013E3F;
+            color: #FFFFFF;
+            padding: 8px 12px;
+            font-weight: 500;
+            font-size: 12px;
+            border-bottom: 2px solid #006768;
+            white-space: nowrap;
+            min-width: 120px;
+        }
+        .data-table th:first-child {
+            text-align: left;
+            min-width: 80px;
+        }
+        .data-table th:not(:first-child) {
+            text-align: right;
+        }
+        .data-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #E0E0E0;
+            font-size: 12px;
+            white-space: nowrap;
+            color: #222222;
+        }
+        .data-table tr:nth-child(even) {
+            background: #F5F5F5;
+        }
+        .data-table tr:hover {
+            background: rgba(1, 62, 63, 0.05);
+        }
+        .data-table .number-cell {
+            text-align: right;
+            font-weight: 500;
+            font-family: 'Roboto Mono', monospace;
+        }
+        .data-table .month-cell {
+            font-weight: 500;
+            color: #013E3F;
+            text-align: left;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 8px;
+            }
+            .charts {
+                grid-template-columns: 1fr;
+                padding: 16px;
+            }
+            .chart-container {
+                height: 300px;
+            }
+            .kpi-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                padding: 16px;
+            }
+            .header {
+                padding: 24px 16px;
+            }
+            .header h1 {
+                font-size: 20px;
+            }
+            .date-controls {
+                flex-direction: column;
+                gap: 16px;
+            }
+            .table-section {
+                padding: 16px;
+            }
+            .table-container {
+                overflow-x: auto;
+            }
+            .data-table {
+                min-width: 600px;
+            }
+            .data-table th,
+            .data-table td {
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="data-validation.html" class="validation-btn">Data Validation →</a>
+            <h1>Executive KPI Dashboard</h1>
+            <p style="margin-top: 10px; opacity: 0.9;">Real-time Performance Metrics</p>
+        </div>
+        
+        <div id="dataStatus">Loading dashboard data...</div>
+
+        <div class="kpi-grid" id="kpiGrid"></div>
+
+        <div class="date-controls">
+            <div class="date-control-group">
+                <label class="date-control-label">From:</label>
+                <select id="startMonth" class="date-select">
+                    <option value="">All months</option>
+                </select>
+            </div>
+            <div class="date-control-group">
+                <label class="date-control-label">To:</label>
+                <select id="endMonth" class="date-select">
+                    <option value="">All months</option>
+                </select>
+            </div>
+            <button class="reset-btn" onclick="resetDateRange()">Reset</button>
+        </div>
+
+        <div class="charts">
+            <div class="chart-container">
+                <div class="chart-title">Revenue Trend</div>
+                <div class="chart-wrapper">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">Operational Metrics</div>
+                <div class="chart-wrapper">
+                    <canvas id="operationalChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-section">
+            <div class="table-title">Data Table</div>
+            <div class="table-container">
+                <table class="data-table" id="dataTable">
+                    <thead id="tableHead">
+                        <!-- Headers will be populated dynamically by JavaScript -->
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Data will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Register Chart.js plugins
+        Chart.register(ChartDataLabels);
+
+        // Global variables
+        let originalData = [];
+        let revenueChart = null;
+        let operationalChart = null;
+
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                // Add timestamp to prevent caching
+                const timestamp = new Date().getTime();
+                const response = await fetch(`/data/processed/dashboard_data.json?t=${timestamp}`);
+                if (!response.ok) throw new Error('Data file not found');
+
+                const dashboardData = await response.json();
+
+                // Transform data from new format to old format
+                originalData = transformData(dashboardData);
+
+                // Update status
+                document.getElementById('dataStatus').innerHTML =
+                    'Data loaded from Google Sheets - Last updated: ' + new Date().toLocaleString();
+
+                // Initialize date controls
+                initializeDateControls(originalData);
+
+                // Calculate summary for KPIs
+                const summary = calculateSummary(originalData);
+
+                // Render KPIs
+                renderKPIs(summary);
+
+                // Render charts
+                renderCharts(originalData);
+
+                // Render table
+                renderTable(originalData);
+
+            } catch (error) {
+                console.error('Error loading data:', error);
+                document.getElementById('dataStatus').innerHTML =
+                    '[WARNING] Error loading data. Please run: python scripts/fetch_from_sheets.py <spreadsheet_id>';
+            }
+        }
+
+        // Transform new JSON format to old format
+        function transformData(data) {
+            const { periods, values } = data;
+            const transformed = [];
+
+            // For each period, create a data point
+            periods.forEach((period, idx) => {
+                const dataPoint = {
+                    month_label: period
+                };
+
+                // Add each metric value for this period
+                Object.keys(values).forEach(metric => {
+                    const value = values[metric][idx];
+                    // Map metric names to expected field names
+                    const fieldMap = {
+                        'GMV': 'gmv',
+                        'Funded Amount': 'funded_amount',
+                        'Avg Days Outstanding': 'avg_days_outstanding',
+                        '# Invoices': 'num_invoices',
+                        '# Boxes': 'num_boxes',
+                        '% GMV Insured': 'gmv_insured_pct',
+                        'Arrangement Fees': 'arrangement_fees',
+                        'Logistic Fees': 'logistic_fees',
+                        'Logistic Costs': 'logistic_costs',
+                        'Cargo Insurance Fees': 'cargo_insurance_fees',
+                        'Cargo Insurance Costs': 'cargo_insurance_costs',
+                        'Accrued Interests': 'accrued_interests',
+                        'Cost of Funds (Accrued)': 'cost_of_funds_accrued',
+                        'Docs Management Fees': 'docs_management_fees',
+                        'Costs of Docs Delivery': 'costs_docs_delivery',
+                        'Warehouse Destination Fees': 'handling_warehouse_fees',
+                        'Warehouse Destination Costs': 'handling_warehouse_costs',
+                        'Avg Portfolio Outstanding': 'avg_portfolio_outstanding',
+                        'Cash Drag': 'cash_drag',
+                        'exch_rate': 'usd_eur_rate_eom'
+                    };
+
+                    const fieldName = fieldMap[metric] || metric.toLowerCase().replace(/ /g, '_');
+                    dataPoint[fieldName] = value;
+                });
+
+                transformed.push(dataPoint);
+            });
+
+            return transformed;
+        }
+
+        // Calculate summary statistics
+        function calculateSummary(data) {
+            const validGMV = data.filter(d => d.gmv != null);
+            const validFunded = data.filter(d => d.funded_amount != null);
+            const validDays = data.filter(d => d.avg_days_outstanding != null);
+            const validCashDrag = data.filter(d => d.cash_drag != null);
+
+            return {
+                total_gmv: validGMV.reduce((sum, d) => sum + d.gmv, 0),
+                total_funded: validFunded.reduce((sum, d) => sum + d.funded_amount, 0),
+                avg_days_outstanding: validDays.reduce((sum, d) => sum + d.avg_days_outstanding, 0) / validDays.length,
+                avg_cash_drag: validCashDrag.reduce((sum, d) => sum + d.cash_drag, 0) / validCashDrag.length
+            };
+        }
+
+        // Initialize date control dropdowns
+        function initializeDateControls(data) {
+            const startSelect = document.getElementById('startMonth');
+            const endSelect = document.getElementById('endMonth');
+
+            // Clear existing options except "All months"
+            startSelect.innerHTML = '<option value="">All months</option>';
+            endSelect.innerHTML = '<option value="">All months</option>';
+
+            // Add options for each month in the data
+            data.forEach((item, index) => {
+                const option1 = document.createElement('option');
+                option1.value = index;
+                option1.textContent = item.month_label;
+                startSelect.appendChild(option1);
+
+                const option2 = document.createElement('option');
+                option2.value = index;
+                option2.textContent = item.month_label;
+                endSelect.appendChild(option2);
+            });
+
+            // Add event listeners
+            startSelect.addEventListener('change', updateCharts);
+            endSelect.addEventListener('change', updateCharts);
+        }
+
+        // Filter data based on date range
+        function getFilteredData() {
+            const startIndex = document.getElementById('startMonth').value;
+            const endIndex = document.getElementById('endMonth').value;
+
+            if (!startIndex && !endIndex) {
+                return originalData;
+            }
+
+            const start = startIndex ? parseInt(startIndex) : 0;
+            const end = endIndex ? parseInt(endIndex) : originalData.length - 1;
+
+            if (start > end) {
+                return originalData.slice(end, start + 1);
+            }
+
+            return originalData.slice(start, end + 1);
+        }
+
+        // Update charts with filtered data
+        function updateCharts() {
+            const filteredData = getFilteredData();
+
+            if (revenueChart) {
+                revenueChart.destroy();
+            }
+            if (operationalChart) {
+                operationalChart.destroy();
+            }
+
+            renderCharts(filteredData);
+            renderTable(filteredData);
+        }
+
+        // Reset date range
+        function resetDateRange() {
+            document.getElementById('startMonth').value = '';
+            document.getElementById('endMonth').value = '';
+            updateCharts();
+        }
+        
+        function renderKPIs(summary) {
+            const kpiGrid = document.getElementById('kpiGrid');
+            const gmv = (summary.total_gmv / 1000000).toFixed(2);
+            const funded = (summary.total_funded / 1000000).toFixed(2);
+            const cashDrag = summary.avg_cash_drag ? (summary.avg_cash_drag * 100).toFixed(1) : 'N/A';
+            const days = summary.avg_days_outstanding.toFixed(0);
+            
+            kpiGrid.innerHTML =
+                '<div class="kpi-card">' +
+                    '<div class="kpi-label">Total GMV</div>' +
+                    '<div class="kpi-value">€' + gmv + 'M</div>' +
+                '</div>' +
+                '<div class="kpi-card">' +
+                    '<div class="kpi-label">Total Funded</div>' +
+                    '<div class="kpi-value">€' + funded + 'M</div>' +
+                '</div>' +
+                '<div class="kpi-card">' +
+                    '<div class="kpi-label">Avg Cash Drag</div>' +
+                    '<div class="kpi-value">' + cashDrag + '%</div>' +
+                '</div>' +
+                '<div class="kpi-card">' +
+                    '<div class="kpi-label">Avg Days Outstanding</div>' +
+                    '<div class="kpi-value">' + days + ' days</div>' +
+                '</div>';
+        }
+        
+        function formatValue(value) {
+            if (value >= 1000) {
+                return Math.round(value / 1000).toLocaleString() + 'K';
+            }
+            return value.toLocaleString();
+        }
+
+        // Helper function to format column headers
+        function formatColumnHeader(key) {
+            const headerMap = {
+                'month_label': 'Month',
+                'gmv': 'GMV (€)',
+                'funded_amount': 'Funded Amount (€)',
+                'avg_days_outstanding': 'Avg Days Outstanding',
+                'num_invoices': '# Invoices',
+                'num_boxes': '# Boxes',
+                'accrued_interests': 'Accrued Interests (€)',
+                'arrangement_fees': 'Arrangement Fees (€)',
+                'avg_portfolio_outstanding': 'Avg Portfolio Outstanding (€)',
+                'cargo_insurance_costs': 'Cargo Insurance Costs (€)',
+                'cargo_insurance_fees': 'Cargo Insurance Fees (€)',
+                'cash_drag': 'Cash Drag (%)',
+                'cost_of_funds_accrued': 'Cost of Funds (€)',
+                'costs_docs_delivery': 'Docs Delivery Costs (€)',
+                'docs_management_fees': 'Docs Management Fees (€)',
+                'gmv_insured_pct': 'GMV Insured (%)',
+                'handling_warehouse_costs': 'Warehouse Costs (€)',
+                'handling_warehouse_fees': 'Warehouse Fees (€)',
+                'logistic_costs': 'Logistic Costs (€)',
+                'logistic_fees': 'Logistic Fees (€)',
+                'usd_eur_rate_eom': 'USD/EUR Rate',
+                'boxes_per_invoice': 'Boxes per Invoice',
+                'gmv_mom_growth': 'GMV MoM Growth (%)',
+                'funded_mom_growth': 'Funded MoM Growth (%)',
+                'gmv_ma3': 'GMV 3M Avg (€)',
+                'funded_ma3': 'Funded 3M Avg (€)',
+                'cumulative_gmv': 'Cumulative GMV (€)',
+                'cumulative_funded': 'Cumulative Funded (€)',
+                'days_performance': 'Days Performance',
+                'quarter': 'Quarter',
+                'year': 'Year',
+                'month_name': 'Month Name'
+            };
+            return headerMap[key] || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        }
+
+        // Helper function to format cell values
+        function formatCellValue(key, value) {
+            if (value === null || value === undefined || value === '') {
+                return '-';
+            }
+
+            try {
+                // Currency values (in EUR)
+                const currencyFields = ['gmv', 'funded_amount', 'accrued_interests', 'arrangement_fees',
+                                      'avg_portfolio_outstanding', 'cargo_insurance_costs', 'cargo_insurance_fees',
+                                      'cost_of_funds_accrued', 'costs_docs_delivery', 'docs_management_fees',
+                                      'handling_warehouse_costs', 'handling_warehouse_fees', 'logistic_costs',
+                                      'logistic_fees', 'gmv_ma3', 'funded_ma3', 'cumulative_gmv', 'cumulative_funded'];
+
+                // Percentage values already in decimal form (0.27 = 27%)
+                const decimalPercentageFields = ['cash_drag', 'gmv_insured_pct'];
+
+                // Percentage values that need conversion from decimal to percentage
+                const growthPercentageFields = ['gmv_mom_growth', 'funded_mom_growth'];
+
+                // Count/Integer values
+                const countFields = ['num_invoices', 'num_boxes', 'avg_days_outstanding', 'quarter', 'year'];
+
+                // Decimal values (rates, ratios)
+                const decimalFields = ['usd_eur_rate_eom', 'boxes_per_invoice'];
+
+                if (currencyFields.includes(key)) {
+                    return `€${Math.round(Number(value)).toLocaleString()}`;
+                } else if (decimalPercentageFields.includes(key)) {
+                    return `${(Number(value) * 100).toFixed(1)}%`;
+                } else if (growthPercentageFields.includes(key)) {
+                    return `${Number(value).toFixed(1)}%`;
+                } else if (countFields.includes(key)) {
+                    return Math.round(Number(value)).toLocaleString();
+                } else if (decimalFields.includes(key)) {
+                    return Number(value).toFixed(2);
+                } else {
+                    return String(value);
+                }
+            } catch (error) {
+                console.warn(`Error formatting value for ${key}:`, value, error);
+                return String(value);
+            }
+        }
+
+        // Render data table dynamically
+        function renderTable(data) {
+            try {
+                if (!data || data.length === 0) {
+                    console.warn('No data provided to renderTable');
+                    return;
+                }
+
+                const tableHead = document.getElementById('tableHead');
+                const tableBody = document.getElementById('tableBody');
+
+                if (!tableHead || !tableBody) {
+                    console.error('Table elements not found');
+                    return;
+                }
+
+                // Clear existing content
+                tableHead.innerHTML = '';
+                tableBody.innerHTML = '';
+
+                // Define supporting/metadata columns to exclude from table display
+                const excludedColumns = [
+                    'month',           // Raw date field (we use month_label)
+                    'month_name',      // Redundant with month_label
+                    'quarter',         // Supporting metadata
+                    'year',            // Supporting metadata
+                    'usd_eur_rate_eom', // Exchange rate (supporting data)
+                    'days_performance'  // Derived text category
+                ];
+
+                // Get all unique keys from the data, excluding supporting columns
+                const allKeys = new Set();
+                data.forEach(row => {
+                    if (row && typeof row === 'object') {
+                        Object.keys(row).forEach(key => {
+                            if (!excludedColumns.includes(key)) {
+                                allKeys.add(key);
+                            }
+                        });
+                    }
+                });
+
+                if (allKeys.size === 0) {
+                    console.warn('No valid columns found in data');
+                    return;
+                }
+
+                // Convert to array and sort for consistent ordering (prioritize core business metrics)
+                const orderedKeys = ['month_label', 'gmv', 'funded_amount', 'avg_days_outstanding', 'num_invoices', 'num_boxes', 'cash_drag'];
+                const remainingKeys = Array.from(allKeys).filter(key => !orderedKeys.includes(key)).sort();
+                const columns = [...orderedKeys.filter(key => allKeys.has(key)), ...remainingKeys];
+
+                // Create table header
+                const headerRow = document.createElement('tr');
+                columns.forEach(key => {
+                    const th = document.createElement('th');
+                    th.textContent = formatColumnHeader(key);
+                    headerRow.appendChild(th);
+                });
+                tableHead.appendChild(headerRow);
+
+                // Create table rows
+                data.forEach((row, index) => {
+                    try {
+                        const tr = document.createElement('tr');
+
+                        columns.forEach(key => {
+                            const td = document.createElement('td');
+                            td.className = key === 'month_label' ? 'month-cell' : 'number-cell';
+                            td.textContent = formatCellValue(key, row[key]);
+                            tr.appendChild(td);
+                        });
+
+                        tableBody.appendChild(tr);
+                    } catch (rowError) {
+                        console.error(`Error rendering row ${index}:`, rowError, row);
+                    }
+                });
+
+                console.log(`Table rendered successfully with ${columns.length} columns and ${data.length} rows`);
+
+            } catch (error) {
+                console.error('Error in renderTable:', error);
+                // Fallback to show an error message
+                const tableBody = document.getElementById('tableBody');
+                if (tableBody) {
+                    tableBody.innerHTML = '<tr><td colspan="100%">Error loading table data</td></tr>';
+                }
+            }
+        }
+
+        function renderCharts(data) {
+            console.log('Rendering charts with data:', data);
+
+            // Filter out null values for charts
+            const validData = data.filter(d => d.gmv != null && d.funded_amount != null);
+            console.log('Valid data points:', validData.length);
+
+            // Revenue Chart
+            revenueChart = new Chart(document.getElementById('revenueChart'), {
+                type: 'line',
+                data: {
+                    labels: validData.map(d => d.month_label),
+                    datasets: [{
+                        label: 'GMV',
+                        data: validData.map(d => d.gmv),
+                        borderColor: '#013E3F',
+                        backgroundColor: 'rgba(1, 62, 63, 0.1)',
+                        tension: 0.3,
+                        borderWidth: 2,
+                        datalabels: {
+                            align: 'top',
+                            anchor: 'end'
+                        }
+                    }, {
+                        label: 'Funded Amount',
+                        data: validData.map(d => d.funded_amount),
+                        borderColor: '#009091',
+                        backgroundColor: 'rgba(0, 144, 145, 0.1)',
+                        tension: 0.3,
+                        borderWidth: 2,
+                        datalabels: {
+                            align: 'bottom',
+                            anchor: 'start'
+                        }
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    layout: {
+                        padding: {
+                            top: 10,
+                            bottom: 10,
+                            left: 30,
+                            right: 10
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#222222',
+                                font: {
+                                    family: 'Segoe UI, Inter, Arial, sans-serif',
+                                    size: 14
+                                },
+                                padding: 20
+                            }
+                        },
+                        datalabels: {
+                            display: function(context) {
+                                return true;
+                            },
+                            color: '#222222',
+                            font: {
+                                size: 10,
+                                weight: 500
+                            },
+                            formatter: function(value) {
+                                return formatValue(value);
+                            },
+                            backgroundColor: 'rgba(240, 240, 240, 0.95)',
+                            borderRadius: 4,
+                            padding: 4,
+                            offset: 12,
+                            clip: false,
+                            listeners: {
+                                enter: function(context) {
+                                    return false;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            grace: '15%',
+                            ticks: {
+                                color: '#666666',
+                                font: {
+                                    family: 'Segoe UI, Inter, Arial, sans-serif'
+                                },
+                                callback: function(value) {
+                                    return formatValue(value);
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(102, 102, 102, 0.2)',
+                                borderDash: [3, 3],
+                                drawBorder: false
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#666666',
+                                font: {
+                                    family: 'Segoe UI, Inter, Arial, sans-serif'
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(102, 102, 102, 0.2)',
+                                borderDash: [3, 3],
+                                drawBorder: false
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Operational Chart
+            const validOpData = data.filter(d => d.num_invoices != null && d.num_boxes != null);
+            console.log('Valid operational data points:', validOpData.length);
+
+            operationalChart = new Chart(document.getElementById('operationalChart'), {
+                type: 'bar',
+                data: {
+                    labels: validOpData.map(d => d.month_label),
+                    datasets: [{
+                        label: 'Invoices',
+                        data: validOpData.map(d => d.num_invoices),
+                        backgroundColor: '#006768'
+                    }, {
+                        label: 'Boxes',
+                        data: validOpData.map(d => d.num_boxes),
+                        backgroundColor: '#20D9DC'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    layout: {
+                        padding: {
+                            top: 10,
+                            bottom: 10,
+                            left: 30,
+                            right: 10
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#222222',
+                                font: {
+                                    family: 'Segoe UI, Inter, Arial, sans-serif',
+                                    size: 14
+                                },
+                                padding: 20
+                            }
+                        },
+                        datalabels: {
+                            display: true,
+                            align: 'top',
+                            anchor: 'end',
+                            color: '#222222',
+                            font: {
+                                size: 10,
+                                weight: 500
+                            },
+                            formatter: function(value) {
+                                return formatValue(value);
+                            },
+                            backgroundColor: 'rgba(240, 240, 240, 0.95)',
+                            borderRadius: 4,
+                            padding: 4,
+                            offset: 12,
+                            clip: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            grace: '15%',
+                            ticks: {
+                                color: '#666666',
+                                font: {
+                                    family: 'Segoe UI, Inter, Arial, sans-serif'
+                                },
+                                callback: function(value) {
+                                    return formatValue(value);
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(102, 102, 102, 0.2)',
+                                borderDash: [3, 3],
+                                drawBorder: false
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#666666',
+                                font: {
+                                    family: 'Segoe UI, Inter, Arial, sans-serif'
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(102, 102, 102, 0.2)',
+                                borderDash: [3, 3],
+                                drawBorder: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Load data on page load
+        loadDashboardData();
+    </script>
+</body>
+</html>

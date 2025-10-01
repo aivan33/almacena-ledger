@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Test Dashboard Data</title>
+</head>
+<body>
+    <h1>Testing Data Load</h1>
+    <div id="status">Loading...</div>
+    <pre id="output"></pre>
+
+    <script>
+        async function testLoad() {
+            try {
+                const response = await fetch('../data/processed/dashboard_data.json');
+                document.getElementById('status').textContent = 'Fetch response: ' + response.ok;
+
+                const data = await response.json();
+                document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+
+                console.log('Data loaded:', data);
+                console.log('Periods:', data.periods);
+                console.log('Metrics:', data.metrics);
+            } catch (error) {
+                document.getElementById('status').textContent = 'Error: ' + error.message;
+                console.error('Error:', error);
+            }
+        }
+
+        testLoad();
+    </script>
+</body>
+</html>

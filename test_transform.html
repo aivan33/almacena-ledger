@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Test Transform</title>
+</head>
+<body>
+    <h1>Testing Data Transformation</h1>
+    <div id="status">Processing...</div>
+    <h2>Original Data:</h2>
+    <pre id="original"></pre>
+    <h2>Transformed Data:</h2>
+    <pre id="transformed"></pre>
+
+    <script>
+        // Transform function from dashboard
+        function transformData(data) {
+            const { periods, values } = data;
+            const transformed = [];
+
+            periods.forEach((period, idx) => {
+                const dataPoint = {
+                    month_label: period
+                };
+
+                Object.keys(values).forEach(metric => {
+                    const value = values[metric][idx];
+                    const fieldMap = {
+                        'GMV': 'gmv',
+                        'Funded Amount': 'funded_amount',
+                        'Avg Days Outstanding': 'avg_days_outstanding',
+                        '# Invoices': 'num_invoices',
+                        '# Boxes': 'num_boxes',
+                        '% GMV Insured': 'gmv_insured_pct',
+                        'Arrangement Fees': 'arrangement_fees',
+                        'Logistic Fees': 'logistic_fees',
+                        'Logistic Costs': 'logistic_costs',
+                        'Cargo Insurance Fees': 'cargo_insurance_fees',
+                        'Cargo Insurance Costs': 'cargo_insurance_costs',
+                        'Accrued Interests': 'accrued_interests',
+                        'Cost of Funds (Accrued)': 'cost_of_funds_accrued',
+                        'Docs Management Fees': 'docs_management_fees',
+                        'Costs of Docs Delivery': 'costs_docs_delivery',
+                        'Warehouse Destination Fees': 'handling_warehouse_fees',
+                        'Warehouse Destination Costs': 'handling_warehouse_costs',
+                        'Avg Portfolio Outstanding': 'avg_portfolio_outstanding',
+                        'Cash Drag': 'cash_drag',
+                        'exch_rate': 'usd_eur_rate_eom'
+                    };
+
+                    const fieldName = fieldMap[metric] || metric.toLowerCase().replace(/ /g, '_');
+                    dataPoint[fieldName] = value;
+                });
+
+                transformed.push(dataPoint);
+            });
+
+            return transformed;
+        }
+
+        async function testTransform() {
+            try {
+                const response = await fetch('data/processed/dashboard_data.json');
+                const data = await response.json();
+
+                document.getElementById('original').textContent = JSON.stringify(data, null, 2);
+
+                const transformed = transformData(data);
+                document.getElementById('transformed').textContent = JSON.stringify(transformed, null, 2);
+
+                document.getElementById('status').textContent = 'Success! Transformed ' + transformed.length + ' records';
+                console.log('Transformed data:', transformed);
+            } catch (error) {
+                document.getElementById('status').textContent = 'Error: ' + error.message;
+                console.error('Error:', error);
+            }
+        }
+
+        testTransform();
+    </script>
+</body>
+</html>
