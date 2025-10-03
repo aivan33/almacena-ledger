@@ -3,118 +3,186 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KPI Dashboard</title>
+    <title>Trade Finance KPI Dashboard</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            font-family: Segoe UI, Inter, Arial, sans-serif;
+            font-family: 'Segoe UI', Inter, Arial, sans-serif;
             background: #F5F5F5;
             min-height: 100vh;
             padding: 16px;
         }
+
         .container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
             background: #FFFFFF;
             border-radius: 8px;
             box-shadow: 0px 4px 12px rgba(0,0,0,0.15);
             overflow: hidden;
         }
+
         .header {
-            background: #013E3F;
+            background: linear-gradient(135deg, #013E3F 0%, #006768 100%);
             color: #FFFFFF;
             padding: 32px;
             text-align: center;
-            position: relative;
         }
-        .validation-btn {
-            position: absolute;
-            right: 32px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: #009091;
-            color: #FFFFFF;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-        }
-        .validation-btn:hover {
-            background: #006768;
-        }
+
         .header h1 {
-            font-size: 28px;
+            font-size: 32px;
             font-weight: 700;
             margin-bottom: 8px;
+            font-family: Verdana, 'Segoe UI', sans-serif;
         }
+
         .header p {
             font-size: 16px;
-            font-weight: 400;
             opacity: 0.9;
         }
-        .kpi-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
+
+        /* KPI Cards */
+        .kpi-section {
             padding: 24px;
             background: #F5F5F5;
         }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
         .kpi-card {
             background: #FFFFFF;
             padding: 24px;
             border-radius: 8px;
-            box-shadow: 0px 1px 3px rgba(0,0,0,0.1);
-            border: 2px solid #013E3F;
-            text-align: center;
+            box-shadow: 0px 2px 6px rgba(0,0,0,0.1);
+            border-left: 4px solid #013E3F;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
+
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0px 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .kpi-card.warning {
+            border-left-color: #FF9800;
+        }
+
+        .kpi-card.danger {
+            border-left-color: #F44336;
+        }
+
+        .kpi-card.good {
+            border-left-color: #4CAF50;
+        }
+
         .kpi-label {
-            font-size: 16px;
+            font-size: 14px;
             color: #666666;
             text-transform: uppercase;
-            margin-bottom: 4px;
-            font-weight: 500;
-            text-align: center;
+            margin-bottom: 8px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
         }
+
         .kpi-value {
-            font-size: 28px;
+            font-size: 32px;
             font-weight: 700;
             color: #013E3F;
-            text-align: center;
+            margin-bottom: 4px;
         }
-        .charts {
+
+        .kpi-change {
+            font-size: 12px;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .kpi-change.positive {
+            color: #4CAF50;
+        }
+
+        .kpi-change.negative {
+            color: #F44336;
+        }
+
+        .kpi-description {
+            font-size: 12px;
+            color: #999;
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        /* Charts Section */
+        .charts-section {
             padding: 24px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 24px;
             background: #FFFFFF;
         }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #013E3F;
+            margin-bottom: 24px;
+            padding-left: 12px;
+            border-left: 4px solid #013E3F;
+            font-family: Verdana, 'Segoe UI', sans-serif;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
         .chart-container {
             background: #FFFFFF;
             padding: 24px;
             border-radius: 8px;
-            box-shadow: 0px 1px 3px rgba(0,0,0,0.1);
+            box-shadow: 0px 2px 6px rgba(0,0,0,0.1);
             height: 400px;
             display: flex;
             flex-direction: column;
         }
-        .chart-title {
-            font-size: 16px;
-            margin-bottom: 16px;
-            color: #222222;
-            font-weight: 500;
-            flex-shrink: 0;
+
+        .chart-container.full-width {
+            grid-column: 1 / -1;
         }
+
+        .chart-container.large {
+            height: 500px;
+        }
+
+        .chart-title {
+            font-size: 20px;
+            margin-bottom: 8px;
+            color: #013E3F;
+            font-weight: 700;
+            font-family: Verdana, 'Segoe UI', sans-serif;
+        }
+
+        .chart-subtitle {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 16px;
+        }
+
         .chart-wrapper {
             position: relative;
             flex: 1;
             min-height: 0;
         }
+
         .chart-wrapper canvas {
             position: absolute;
             top: 0;
@@ -122,169 +190,561 @@
             width: 100% !important;
             height: 100% !important;
         }
+
+        /* Gauge Section */
+        .gauge-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .gauge-container {
+            background: #FFFFFF;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0px 2px 6px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .gauge-value {
+            font-size: 48px;
+            font-weight: 700;
+            color: #013E3F;
+            margin: 16px 0;
+        }
+
+        .gauge-label {
+            font-size: 14px;
+            color: #666;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .gauge-bar {
+            width: 100%;
+            height: 12px;
+            background: #E0E0E0;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-top: 12px;
+        }
+
+        .gauge-fill {
+            height: 100%;
+            border-radius: 6px;
+            transition: width 0.3s, background-color 0.3s;
+        }
+
+        /* Tables */
+        .table-section {
+            padding: 24px;
+            background: #F5F5F5;
+        }
+
+        .table-container {
+            background: #FFFFFF;
+            border-radius: 8px;
+            box-shadow: 0px 2px 6px rgba(0,0,0,0.1);
+            overflow-x: auto;
+            margin-bottom: 24px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .data-table th {
+            background: #013E3F;
+            color: #FFFFFF;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .data-table th.number {
+            text-align: right;
+        }
+
+        .data-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #E0E0E0;
+        }
+
+        .data-table td.number {
+            text-align: right;
+            font-family: 'Courier New', monospace;
+        }
+
+        .data-table tr:hover {
+            background: rgba(1, 62, 63, 0.05);
+        }
+
+        .data-table tr:nth-child(even) {
+            background: #F9F9F9;
+        }
+
+        .data-table tr:nth-child(even):hover {
+            background: rgba(1, 62, 63, 0.08);
+        }
+
+        .highlight-warning {
+            background: #FFF3E0 !important;
+            font-weight: 600;
+        }
+
+        .highlight-danger {
+            background: #FFEBEE !important;
+            font-weight: 600;
+            color: #C62828;
+        }
+
+        /* Status indicator */
         #dataStatus {
-            padding: 16px 24px;
+            padding: 12px 24px;
             background: #F5F5F5;
             text-align: center;
             font-size: 14px;
-            color: #666666;
+            color: #999999;
+            border-left: 4px solid #DDDDDD;
         }
 
-        .date-controls {
+        /* Filter Controls - Two-tier design */
+        .filter-section {
+            background: #F5F5F5;
+            border-bottom: 2px solid #E0E0E0;
+        }
+
+        /* Top Context Bar */
+        .context-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             padding: 16px 24px;
             background: #FFFFFF;
             border-bottom: 1px solid #E0E0E0;
+        }
+
+        .context-left {
             display: flex;
             align-items: center;
-            justify-content: center;
             gap: 24px;
-            flex-wrap: wrap;
         }
-        .date-control-group {
+
+        .current-period-badge {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #013E3F 0%, #006768 100%);
+            color: #FFFFFF;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
+            box-shadow: 0px 2px 4px rgba(0,0,0,0.1);
         }
-        .date-control-label {
-            font-size: 14px;
-            font-weight: 500;
+
+        .current-period-label {
+            font-size: 11px;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .current-period-value {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .filter-summary {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            font-size: 13px;
             color: #666666;
-            min-width: 60px;
         }
-        .date-select {
-            padding: 8px 12px;
-            border: 2px solid #013E3F;
-            border-radius: 4px;
-            font-size: 14px;
-            font-family: Segoe UI, Inter, Arial, sans-serif;
-            color: #222222;
+
+        .filter-chip {
+            padding: 6px 12px;
+            background: #E3F2FD;
+            color: #1976D2;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .filter-chip-icon {
+            font-size: 10px;
+        }
+
+        .context-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .btn-reset {
+            padding: 10px 20px;
             background: #FFFFFF;
-            min-width: 120px;
+            color: #666666;
+            border: 1px solid #CCCCCC;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
-        .date-select:focus {
-            outline: none;
-            box-shadow: 0px 0px 0px 2px rgba(1, 62, 63, 0.2);
+
+        .btn-reset:hover {
+            background: #F5F5F5;
+            border-color: #999999;
+            color: #333333;
         }
-        .reset-btn {
-            padding: 8px 16px;
-            background: #013E3F;
+
+        .btn-export {
+            padding: 10px 24px;
+            background: #009091;
             color: #FFFFFF;
             border: none;
             border-radius: 4px;
             font-size: 14px;
-            font-weight: 500;
+            font-weight: 600;
             cursor: pointer;
-            font-family: Segoe UI, Inter, Arial, sans-serif;
-        }
-        .reset-btn:hover {
-            background: #006768;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0px 2px 4px rgba(0,0,0,0.1);
         }
 
-        .table-section {
-            padding: 24px;
-            background: #FFFFFF;
+        .btn-export:hover {
+            background: #006768;
+            box-shadow: 0px 3px 6px rgba(0,0,0,0.15);
         }
-        .table-title {
-            font-size: 20px;
+
+        .btn-export:disabled {
+            background: #CCCCCC;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Bottom Filter Controls Bar */
+        .filter-controls-bar {
+            padding: 20px 24px;
+            background: #F5F5F5;
+            display: flex;
+            gap: 32px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .filter-label {
+            font-size: 11px;
             font-weight: 700;
+            color: #666666;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .filter-select, .filter-input {
+            padding: 10px 14px;
+            border: 1px solid #CCCCCC;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: 'Segoe UI', Inter, Arial, sans-serif;
             color: #222222;
-            margin-bottom: 16px;
-            text-align: center;
-        }
-        .table-container {
             background: #FFFFFF;
-            border-radius: 8px;
-            box-shadow: 0px 1px 3px rgba(0,0,0,0.1);
-            border: 2px solid #013E3F;
-            overflow-x: auto;
-            overflow-y: hidden;
-            max-height: 600px;
+            min-width: 160px;
+            cursor: pointer;
+            transition: all 0.2s;
         }
-        .data-table {
-            width: max-content;
-            min-width: 100%;
-            border-collapse: collapse;
-            font-family: Segoe UI, Inter, Arial, sans-serif;
+
+        .filter-select:hover {
+            border-color: #013E3F;
         }
-        .data-table th {
+
+        .filter-select:focus, .filter-input:focus {
+            outline: none;
+            border-color: #013E3F;
+            box-shadow: 0px 0px 0px 3px rgba(1, 62, 63, 0.1);
+        }
+
+        .date-range-group {
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+        }
+
+        .date-range-separator {
+            padding-bottom: 10px;
+            color: #999999;
+            font-size: 14px;
+        }
+
+        .view-toggle {
+            display: flex;
+            gap: 0;
+            background: #FFFFFF;
+            border: 1px solid #CCCCCC;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .view-toggle-btn {
+            padding: 10px 20px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #666666;
+            background: #FFFFFF;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .view-toggle-btn:not(:last-child) {
+            border-right: 1px solid #CCCCCC;
+        }
+
+        .view-toggle-btn.active {
             background: #013E3F;
             color: #FFFFFF;
-            padding: 8px 12px;
-            font-weight: 500;
-            font-size: 12px;
-            border-bottom: 2px solid #006768;
-            white-space: nowrap;
-            min-width: 120px;
         }
-        .data-table th:first-child {
-            text-align: left;
-            min-width: 80px;
+
+        .view-toggle-btn:hover:not(.active) {
+            background: #F8F8F8;
+            color: #333333;
         }
-        .data-table th:not(:first-child) {
-            text-align: right;
+
+        /* Print and PDF export styles */
+        @media print {
+            .filter-section,
+            .context-bar,
+            .filter-controls-bar,
+            #dataStatus {
+                display: none !important;
+            }
+
+            body {
+                background: #FFFFFF;
+                padding: 0;
+            }
+
+            .container {
+                box-shadow: none;
+            }
+
+            .chart-container,
+            .kpi-card,
+            .gauge-container,
+            .table-container {
+                page-break-inside: avoid;
+            }
         }
-        .data-table td {
-            padding: 8px 12px;
-            border-bottom: 1px solid #E0E0E0;
-            font-size: 12px;
-            white-space: nowrap;
-            color: #222222;
+
+        /* PDF Export Mode - Optimized Layout */
+        .pdf-export-mode .filter-section,
+        .pdf-export-mode .context-bar,
+        .pdf-export-mode .filter-controls-bar,
+        .pdf-export-mode #dataStatus {
+            display: none !important;
         }
-        .data-table tr:nth-child(even) {
-            background: #F5F5F5;
+
+        .pdf-export-mode body {
+            background: #FFFFFF;
+            padding: 0;
+            width: 100%;
         }
-        .data-table tr:hover {
-            background: rgba(1, 62, 63, 0.05);
+
+        .pdf-export-mode .container {
+            max-width: 100% !important;
+            width: 100% !important;
+            box-shadow: none;
+            border-radius: 0;
+            margin: 0;
         }
-        .data-table .number-cell {
-            text-align: right;
-            font-weight: 500;
-            font-family: 'Roboto Mono', monospace;
+
+        .pdf-export-mode .header {
+            padding: 20px;
         }
-        .data-table .month-cell {
-            font-weight: 500;
-            color: #013E3F;
-            text-align: left;
+
+        /* KPI Cards - 3 columns */
+        .pdf-export-mode .kpi-section {
+            padding: 20px;
+        }
+
+        .pdf-export-mode .kpi-grid {
+            grid-template-columns: repeat(3, 1fr) !important;
+            gap: 16px;
+        }
+
+        .pdf-export-mode .kpi-card {
+            padding: 16px;
+        }
+
+        /* Charts - All single column for quality */
+        .pdf-export-mode .charts-section {
+            padding: 20px;
+        }
+
+        .pdf-export-mode .charts-grid {
+            grid-template-columns: 1fr !important;
+            gap: 24px;
+        }
+
+        .pdf-export-mode .chart-container {
+            height: 380px !important;
+            width: 100%;
+            padding: 16px;
+            page-break-inside: avoid;
+            margin-bottom: 16px;
+        }
+
+        .pdf-export-mode .chart-container.large {
+            height: 420px !important;
+        }
+
+        .pdf-export-mode .chart-container.full-width {
+            grid-column: 1;
+        }
+
+        /* Gauges - 3 columns */
+        .pdf-export-mode .gauge-grid {
+            grid-template-columns: repeat(3, 1fr) !important;
+            gap: 16px;
+        }
+
+        .pdf-export-mode .gauge-container {
+            padding: 16px;
+        }
+
+        /* Tables */
+        .pdf-export-mode .table-section {
+            padding: 20px;
+            page-break-before: always;
+        }
+
+        .pdf-export-mode .section-title {
+            page-break-after: avoid;
+            margin-top: 16px;
+            margin-bottom: 16px;
+        }
+
+        .pdf-export-mode .data-table {
+            font-size: 11px;
+        }
+
+        .pdf-export-mode .data-table th,
+        .pdf-export-mode .data-table td {
+            padding: 8px 10px;
+        }
+
+        .pdf-header {
+            display: none;
+            padding: 20px;
+            background: #013E3F;
+            color: #FFFFFF;
+            text-align: center;
+        }
+
+        .pdf-export-mode .pdf-header {
+            display: block;
+        }
+
+        .pdf-header h2 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .pdf-header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            .kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .gauge-grid {
+                grid-template-columns: 1fr;
+            }
+            .filter-controls-bar {
+                gap: 20px;
+            }
         }
 
         @media (max-width: 768px) {
             body {
                 padding: 8px;
             }
-            .charts {
+            .header {
+                padding: 24px 16px;
+            }
+            .header h1 {
+                font-size: 24px;
+            }
+            .kpi-grid {
                 grid-template-columns: 1fr;
+            }
+            .kpi-section, .charts-section, .table-section {
                 padding: 16px;
             }
             .chart-container {
                 height: 300px;
             }
-            .kpi-grid {
-                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-                padding: 16px;
-            }
-            .header {
-                padding: 24px 16px;
-            }
-            .header h1 {
-                font-size: 20px;
-            }
-            .date-controls {
+
+            /* Responsive filter layout */
+            .context-bar {
                 flex-direction: column;
                 gap: 16px;
+                align-items: stretch;
             }
-            .table-section {
-                padding: 16px;
+            .context-left {
+                flex-direction: column;
+                gap: 12px;
             }
-            .table-container {
-                overflow-x: auto;
+            .context-actions {
+                width: 100%;
+                justify-content: stretch;
             }
-            .data-table {
-                min-width: 600px;
+            .btn-reset, .btn-export {
+                flex: 1;
             }
-            .data-table th,
-            .data-table td {
-                padding: 8px 12px;
-                font-size: 12px;
+            .filter-controls-bar {
+                flex-direction: column;
+                gap: 16px;
+                align-items: stretch;
+            }
+            .date-range-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .date-range-separator {
+                text-align: center;
+                padding: 0;
+            }
+            .filter-select {
+                min-width: 100%;
             }
         }
     </style>
@@ -292,56 +752,174 @@
 <body>
     <div class="container">
         <div class="header">
-            <a href="data-validation.html" class="validation-btn">Data Validation →</a>
-            <h1>Executive KPI Dashboard</h1>
-            <p style="margin-top: 10px; opacity: 0.9;">Real-time Performance Metrics</p>
+            <h1>Trade Finance KPI Dashboard</h1>
         </div>
-        
+
         <div id="dataStatus">Loading dashboard data...</div>
 
-        <div class="kpi-grid" id="kpiGrid"></div>
-
-        <div class="date-controls">
-            <div class="date-control-group">
-                <label class="date-control-label">From:</label>
-                <select id="startMonth" class="date-select">
-                    <option value="">All months</option>
-                </select>
-            </div>
-            <div class="date-control-group">
-                <label class="date-control-label">To:</label>
-                <select id="endMonth" class="date-select">
-                    <option value="">All months</option>
-                </select>
-            </div>
-            <button class="reset-btn" onclick="resetDateRange()">Reset</button>
-        </div>
-
-        <div class="charts">
-            <div class="chart-container">
-                <div class="chart-title">Revenue Trend</div>
-                <div class="chart-wrapper">
-                    <canvas id="revenueChart"></canvas>
+        <!-- Filter Controls - Two-tier Design -->
+        <div class="filter-section">
+            <!-- Top Context Bar -->
+            <div class="context-bar">
+                <div class="context-left">
+                    <div class="current-period-badge">
+                        <span class="current-period-label">Viewing</span>
+                        <span class="current-period-value" id="currentPeriodDisplay">-</span>
+                    </div>
+                    <div class="filter-summary" id="filterSummary">
+                        <!-- Dynamic filter chips will appear here -->
+                    </div>
+                </div>
+                <div class="context-actions">
+                    <button class="btn-reset" onclick="resetFilters()">
+                        <span>↺</span>
+                        <span>Reset</span>
+                    </button>
+                    <button class="btn-export" onclick="exportToPDF()" id="exportBtn">
+                        <span>📄</span>
+                        <span>Export PDF</span>
+                    </button>
                 </div>
             </div>
-            <div class="chart-container">
-                <div class="chart-title">Operational Metrics</div>
-                <div class="chart-wrapper">
-                    <canvas id="operationalChart"></canvas>
+
+            <!-- Bottom Filter Controls Bar -->
+            <div class="filter-controls-bar">
+                <div class="filter-group">
+                    <label class="filter-label">Date Range</label>
+                    <div class="date-range-group">
+                        <select id="filterStartMonth" class="filter-select">
+                            <option value="">From (all)</option>
+                        </select>
+                        <span class="date-range-separator">→</span>
+                        <select id="filterEndMonth" class="filter-select">
+                            <option value="">To (all)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">View Mode</label>
+                    <div class="view-toggle">
+                        <button class="view-toggle-btn active" data-view="monthly" onclick="setViewMode('monthly')">Monthly</button>
+                        <button class="view-toggle-btn" data-view="quarterly" onclick="setViewMode('quarterly')">Quarterly</button>
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">Reference Period</label>
+                    <select id="currentPeriodSelect" class="filter-select">
+                        <option value="">Latest available</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">Currency</label>
+                    <div class="view-toggle">
+                        <button class="view-toggle-btn active" data-currency="usd" onclick="setCurrency('usd')">USD ($)</button>
+                        <button class="view-toggle-btn" data-currency="eur" onclick="setCurrency('eur')">EUR (€)</button>
+                    </div>
                 </div>
             </div>
         </div>
 
+        <!-- PDF Header (hidden by default, shown in PDF export) -->
+        <div class="pdf-header">
+            <h2>Trade Finance KPI Dashboard</h2>
+            <p id="pdfPeriodInfo">Report generated on <span id="pdfDate"></span></p>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="kpi-section">
+            <h2 class="section-title">Executive Summary</h2>
+            <div class="kpi-grid" id="kpiGrid">
+                <!-- KPI cards will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Main Charts -->
+        <div class="charts-section">
+            <h2 class="section-title">Performance Analytics</h2>
+
+            <div class="charts-grid">
+                <div class="chart-container full-width large">
+                    <div class="chart-title">GMV vs Funded Amount Trend</div>
+                    <div class="chart-subtitle">Tracks relationship between total GMV and funded amount over time</div>
+                    <div class="chart-wrapper">
+                        <canvas id="gmvFundedChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">Revenue Streams Breakdown</div>
+                    <div class="chart-subtitle">Monthly breakdown of all revenue streams</div>
+                    <div class="chart-wrapper">
+                        <canvas id="revenueBreakdownChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">Profitability Waterfall</div>
+                    <div class="chart-subtitle" id="waterfallSubtitle">How gross revenue flows to net margin</div>
+                    <div class="chart-wrapper">
+                        <canvas id="waterfallChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-container full-width">
+                    <div class="chart-title">Portfolio Health Metrics</div>
+                    <div class="chart-subtitle">Key risk indicators for portfolio monitoring</div>
+                    <div class="chart-wrapper">
+                        <canvas id="portfolioHealthChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">Cash Drag Trend Analysis</div>
+                    <div class="chart-subtitle">Capital efficiency with target thresholds</div>
+                    <div class="chart-wrapper">
+                        <canvas id="cashDragChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">Exchange Rate Impact</div>
+                    <div class="chart-subtitle">Correlation between exchange rates and GMV</div>
+                    <div class="chart-wrapper">
+                        <canvas id="fxImpactChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-container full-width">
+                    <div class="chart-title">Operational Volume Metrics</div>
+                    <div class="chart-subtitle">Tracks operational volumes and efficiency ratio</div>
+                    <div class="chart-wrapper">
+                        <canvas id="operationalChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cost Efficiency Gauges -->
+            <h2 class="section-title">Cost Efficiency Ratios</h2>
+            <div class="gauge-grid" id="gaugeGrid">
+                <!-- Gauges will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Data Tables -->
         <div class="table-section">
-            <div class="table-title">Data Table</div>
+            <h2 class="section-title">Monthly Performance Summary</h2>
             <div class="table-container">
-                <table class="data-table" id="dataTable">
-                    <thead id="tableHead">
-                        <!-- Headers will be populated dynamically by JavaScript -->
-                    </thead>
-                    <tbody id="tableBody">
-                        <!-- Data will be populated by JavaScript -->
-                    </tbody>
+                <table class="data-table" id="monthlyPerformanceTable">
+                    <thead id="monthlyTableHead"></thead>
+                    <tbody id="monthlyTableBody"></tbody>
+                </table>
+            </div>
+
+            <h2 class="section-title">Fee Type Profitability Analysis</h2>
+            <div class="table-container">
+                <table class="data-table" id="feeProfitabilityTable">
+                    <thead id="feeTableHead"></thead>
+                    <tbody id="feeTableBody"></tbody>
                 </table>
             </div>
         </div>
@@ -351,603 +929,1536 @@
         // Register Chart.js plugins
         Chart.register(ChartDataLabels);
 
-        // Global variables
-        let originalData = [];
-        let revenueChart = null;
-        let operationalChart = null;
+        // Global chart instances
+        let charts = {};
+
+        // Global data
+        let dashboardData = null;
+
+        // Filter state
+        let viewMode = 'monthly'; // 'monthly' or 'quarterly'
+        let currentPeriodIndex = null; // null = latest available, -1 = YTD, -2 = LTM
+        let dateRangeStart = null;
+        let dateRangeEnd = null;
+        let currency = 'usd'; // 'usd' or 'eur'
+
+        // Color palette
+        const colors = {
+            primary: '#013E3F',
+            secondary: '#009091',
+            accent1: '#20D9DC',
+            accent2: '#006768',
+            success: '#4CAF50',
+            warning: '#FF9800',
+            danger: '#F44336',
+            gray: '#666666'
+        };
 
         // Load dashboard data
         async function loadDashboardData() {
             try {
-                // Add timestamp to prevent caching
                 const timestamp = new Date().getTime();
-                const response = await fetch(`/data/processed/dashboard_data.json?t=${timestamp}`);
+                const response = await fetch(`../data/processed/dashboard_data.json?t=${timestamp}`);
                 if (!response.ok) throw new Error('Data file not found');
 
-                const dashboardData = await response.json();
+                dashboardData = await response.json();
 
-                // Transform data from new format to old format
-                originalData = transformData(dashboardData);
-
-                // Update status
                 document.getElementById('dataStatus').innerHTML =
-                    'Data loaded from Google Sheets - Last updated: ' + new Date().toLocaleString();
+                    '✓ Data loaded successfully - Last updated: ' + new Date().toLocaleString();
 
-                // Initialize date controls
-                initializeDateControls(originalData);
+                // Initialize filters
+                initializeFilters();
 
-                // Calculate summary for KPIs
-                const summary = calculateSummary(originalData);
-
-                // Render KPIs
-                renderKPIs(summary);
-
-                // Render charts
-                renderCharts(originalData);
-
-                // Render table
-                renderTable(originalData);
+                // Render all components
+                renderAll();
 
             } catch (error) {
                 console.error('Error loading data:', error);
                 document.getElementById('dataStatus').innerHTML =
-                    '[WARNING] Error loading data. Please run: python scripts/fetch_from_sheets.py <spreadsheet_id>';
+                    '⚠ Error loading data. Please run: python scripts/fetch_from_sheets.py';
+                document.getElementById('dataStatus').style.background = '#FFEBEE';
+                document.getElementById('dataStatus').style.color = '#C62828';
             }
         }
 
-        // Transform new JSON format to old format
-        function transformData(data) {
-            const { periods, values } = data;
-            const transformed = [];
+        // Initialize filter controls
+        function initializeFilters() {
+            const startSelect = document.getElementById('filterStartMonth');
+            const endSelect = document.getElementById('filterEndMonth');
+            const currentSelect = document.getElementById('currentPeriodSelect');
 
-            // For each period, create a data point
-            periods.forEach((period, idx) => {
-                const dataPoint = {
-                    month_label: period
-                };
+            // Clear existing options except default
+            startSelect.innerHTML = '<option value="">From (all)</option>';
+            endSelect.innerHTML = '<option value="">To (all)</option>';
+            currentSelect.innerHTML = '<option value="">Latest available</option>';
 
-                // Add each metric value for this period
-                Object.keys(values).forEach(metric => {
-                    const value = values[metric][idx];
-                    // Map metric names to expected field names
-                    const fieldMap = {
-                        'GMV': 'gmv',
-                        'Funded Amount': 'funded_amount',
-                        'Avg Days Outstanding': 'avg_days_outstanding',
-                        '# Invoices': 'num_invoices',
-                        '# Boxes': 'num_boxes',
-                        '% GMV Insured': 'gmv_insured_pct',
-                        'Arrangement Fees': 'arrangement_fees',
-                        'Logistic Fees': 'logistic_fees',
-                        'Logistic Costs': 'logistic_costs',
-                        'Cargo Insurance Fees': 'cargo_insurance_fees',
-                        'Cargo Insurance Costs': 'cargo_insurance_costs',
-                        'Accrued Interests': 'accrued_interests',
-                        'Cost of Funds (Accrued)': 'cost_of_funds_accrued',
-                        'Docs Management Fees': 'docs_management_fees',
-                        'Costs of Docs Delivery': 'costs_docs_delivery',
-                        'Warehouse Destination Fees': 'handling_warehouse_fees',
-                        'Warehouse Destination Costs': 'handling_warehouse_costs',
-                        'Avg Portfolio Outstanding': 'avg_portfolio_outstanding',
-                        'Cash Drag': 'cash_drag',
-                        'exch_rate': 'usd_eur_rate_eom'
-                    };
+            // Add special period options to reference period
+            const ytdOpt = new Option('YTD (Year to Date)', '-1');
+            const ltmOpt = new Option('LTM (Last 12 Months)', '-2');
+            currentSelect.add(ytdOpt);
+            currentSelect.add(ltmOpt);
 
-                    const fieldName = fieldMap[metric] || metric.toLowerCase().replace(/ /g, '_');
-                    dataPoint[fieldName] = value;
-                });
+            // Add separator
+            const separator = new Option('─────────────────', '', true, true);
+            separator.disabled = true;
+            currentSelect.add(separator);
 
-                transformed.push(dataPoint);
+            // Add period options
+            dashboardData.periods.forEach((period, index) => {
+                const opt1 = new Option(period, index);
+                const opt2 = new Option(period, index);
+                const opt3 = new Option(period, index);
+                startSelect.add(opt1);
+                endSelect.add(opt2);
+                currentSelect.add(opt3);
             });
 
-            return transformed;
-        }
-
-        // Calculate summary statistics
-        function calculateSummary(data) {
-            const validGMV = data.filter(d => d.gmv != null);
-            const validFunded = data.filter(d => d.funded_amount != null);
-            const validDays = data.filter(d => d.avg_days_outstanding != null);
-            const validCashDrag = data.filter(d => d.cash_drag != null);
-
-            return {
-                total_gmv: validGMV.reduce((sum, d) => sum + d.gmv, 0),
-                total_funded: validFunded.reduce((sum, d) => sum + d.funded_amount, 0),
-                avg_days_outstanding: validDays.reduce((sum, d) => sum + d.avg_days_outstanding, 0) / validDays.length,
-                avg_cash_drag: validCashDrag.reduce((sum, d) => sum + d.cash_drag, 0) / validCashDrag.length
-            };
-        }
-
-        // Initialize date control dropdowns
-        function initializeDateControls(data) {
-            const startSelect = document.getElementById('startMonth');
-            const endSelect = document.getElementById('endMonth');
-
-            // Clear existing options except "All months"
-            startSelect.innerHTML = '<option value="">All months</option>';
-            endSelect.innerHTML = '<option value="">All months</option>';
-
-            // Add options for each month in the data
-            data.forEach((item, index) => {
-                const option1 = document.createElement('option');
-                option1.value = index;
-                option1.textContent = item.month_label;
-                startSelect.appendChild(option1);
-
-                const option2 = document.createElement('option');
-                option2.value = index;
-                option2.textContent = item.month_label;
-                endSelect.appendChild(option2);
-            });
+            // Set default current period to latest non-null
+            currentPeriodIndex = getLatestNonNullIndex();
+            if (currentPeriodIndex !== null) {
+                currentSelect.value = currentPeriodIndex;
+                updateCurrentPeriodDisplay();
+            }
 
             // Add event listeners
-            startSelect.addEventListener('change', updateCharts);
-            endSelect.addEventListener('change', updateCharts);
+            startSelect.addEventListener('change', applyFilters);
+            endSelect.addEventListener('change', applyFilters);
+            currentSelect.addEventListener('change', () => {
+                currentPeriodIndex = currentSelect.value === '' ? null : parseInt(currentSelect.value);
+                updateCurrentPeriodDisplay();
+                updateFilterSummary();
+                renderAll();
+            });
         }
 
-        // Filter data based on date range
-        function getFilteredData() {
-            const startIndex = document.getElementById('startMonth').value;
-            const endIndex = document.getElementById('endMonth').value;
+        // Update filter summary chips
+        function updateFilterSummary() {
+            const summaryContainer = document.getElementById('filterSummary');
+            let chips = [];
 
-            if (!startIndex && !endIndex) {
-                return originalData;
+            // View mode chip (only if quarterly)
+            if (viewMode === 'quarterly') {
+                chips.push('<span class="filter-chip"><span class="filter-chip-icon">📊</span> Quarterly View</span>');
             }
 
-            const start = startIndex ? parseInt(startIndex) : 0;
-            const end = endIndex ? parseInt(endIndex) : originalData.length - 1;
-
-            if (start > end) {
-                return originalData.slice(end, start + 1);
+            // Date range chip
+            if (dateRangeStart !== null || dateRangeEnd !== null) {
+                const startLabel = dateRangeStart !== null ? dashboardData.periods[dateRangeStart] : 'Start';
+                const endLabel = dateRangeEnd !== null ? dashboardData.periods[dateRangeEnd] : 'End';
+                chips.push(`<span class="filter-chip"><span class="filter-chip-icon">📅</span> ${startLabel} → ${endLabel}</span>`);
             }
 
-            return originalData.slice(start, end + 1);
+            summaryContainer.innerHTML = chips.join('');
         }
 
-        // Update charts with filtered data
-        function updateCharts() {
-            const filteredData = getFilteredData();
-
-            if (revenueChart) {
-                revenueChart.destroy();
-            }
-            if (operationalChart) {
-                operationalChart.destroy();
-            }
-
-            renderCharts(filteredData);
-            renderTable(filteredData);
-        }
-
-        // Reset date range
-        function resetDateRange() {
-            document.getElementById('startMonth').value = '';
-            document.getElementById('endMonth').value = '';
-            updateCharts();
-        }
-        
-        function renderKPIs(summary) {
-            const kpiGrid = document.getElementById('kpiGrid');
-            const gmv = (summary.total_gmv / 1000000).toFixed(2);
-            const funded = (summary.total_funded / 1000000).toFixed(2);
-            const cashDrag = summary.avg_cash_drag ? (summary.avg_cash_drag * 100).toFixed(1) : 'N/A';
-            const days = summary.avg_days_outstanding.toFixed(0);
-            
-            kpiGrid.innerHTML =
-                '<div class="kpi-card">' +
-                    '<div class="kpi-label">Total GMV</div>' +
-                    '<div class="kpi-value">€' + gmv + 'M</div>' +
-                '</div>' +
-                '<div class="kpi-card">' +
-                    '<div class="kpi-label">Total Funded</div>' +
-                    '<div class="kpi-value">€' + funded + 'M</div>' +
-                '</div>' +
-                '<div class="kpi-card">' +
-                    '<div class="kpi-label">Avg Cash Drag</div>' +
-                    '<div class="kpi-value">' + cashDrag + '%</div>' +
-                '</div>' +
-                '<div class="kpi-card">' +
-                    '<div class="kpi-label">Avg Days Outstanding</div>' +
-                    '<div class="kpi-value">' + days + ' days</div>' +
-                '</div>';
-        }
-        
-        function formatValue(value) {
-            if (value >= 1000) {
-                return Math.round(value / 1000).toLocaleString() + 'K';
-            }
-            return value.toLocaleString();
-        }
-
-        // Helper function to format column headers
-        function formatColumnHeader(key) {
-            const headerMap = {
-                'month_label': 'Month',
-                'gmv': 'GMV (€)',
-                'funded_amount': 'Funded Amount (€)',
-                'avg_days_outstanding': 'Avg Days Outstanding',
-                'num_invoices': '# Invoices',
-                'num_boxes': '# Boxes',
-                'accrued_interests': 'Accrued Interests (€)',
-                'arrangement_fees': 'Arrangement Fees (€)',
-                'avg_portfolio_outstanding': 'Avg Portfolio Outstanding (€)',
-                'cargo_insurance_costs': 'Cargo Insurance Costs (€)',
-                'cargo_insurance_fees': 'Cargo Insurance Fees (€)',
-                'cash_drag': 'Cash Drag (%)',
-                'cost_of_funds_accrued': 'Cost of Funds (€)',
-                'costs_docs_delivery': 'Docs Delivery Costs (€)',
-                'docs_management_fees': 'Docs Management Fees (€)',
-                'gmv_insured_pct': 'GMV Insured (%)',
-                'handling_warehouse_costs': 'Warehouse Costs (€)',
-                'handling_warehouse_fees': 'Warehouse Fees (€)',
-                'logistic_costs': 'Logistic Costs (€)',
-                'logistic_fees': 'Logistic Fees (€)',
-                'usd_eur_rate_eom': 'USD/EUR Rate',
-                'boxes_per_invoice': 'Boxes per Invoice',
-                'gmv_mom_growth': 'GMV MoM Growth (%)',
-                'funded_mom_growth': 'Funded MoM Growth (%)',
-                'gmv_ma3': 'GMV 3M Avg (€)',
-                'funded_ma3': 'Funded 3M Avg (€)',
-                'cumulative_gmv': 'Cumulative GMV (€)',
-                'cumulative_funded': 'Cumulative Funded (€)',
-                'days_performance': 'Days Performance',
-                'quarter': 'Quarter',
-                'year': 'Year',
-                'month_name': 'Month Name'
-            };
-            return headerMap[key] || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-        }
-
-        // Helper function to format cell values
-        function formatCellValue(key, value) {
-            if (value === null || value === undefined || value === '') {
-                return '-';
-            }
-
-            try {
-                // Currency values (in EUR)
-                const currencyFields = ['gmv', 'funded_amount', 'accrued_interests', 'arrangement_fees',
-                                      'avg_portfolio_outstanding', 'cargo_insurance_costs', 'cargo_insurance_fees',
-                                      'cost_of_funds_accrued', 'costs_docs_delivery', 'docs_management_fees',
-                                      'handling_warehouse_costs', 'handling_warehouse_fees', 'logistic_costs',
-                                      'logistic_fees', 'gmv_ma3', 'funded_ma3', 'cumulative_gmv', 'cumulative_funded'];
-
-                // Percentage values already in decimal form (0.27 = 27%)
-                const decimalPercentageFields = ['cash_drag', 'gmv_insured_pct'];
-
-                // Percentage values that need conversion from decimal to percentage
-                const growthPercentageFields = ['gmv_mom_growth', 'funded_mom_growth'];
-
-                // Count/Integer values
-                const countFields = ['num_invoices', 'num_boxes', 'avg_days_outstanding', 'quarter', 'year'];
-
-                // Decimal values (rates, ratios)
-                const decimalFields = ['usd_eur_rate_eom', 'boxes_per_invoice'];
-
-                if (currencyFields.includes(key)) {
-                    return `€${Math.round(Number(value)).toLocaleString()}`;
-                } else if (decimalPercentageFields.includes(key)) {
-                    return `${(Number(value) * 100).toFixed(1)}%`;
-                } else if (growthPercentageFields.includes(key)) {
-                    return `${Number(value).toFixed(1)}%`;
-                } else if (countFields.includes(key)) {
-                    return Math.round(Number(value)).toLocaleString();
-                } else if (decimalFields.includes(key)) {
-                    return Number(value).toFixed(2);
-                } else {
-                    return String(value);
-                }
-            } catch (error) {
-                console.warn(`Error formatting value for ${key}:`, value, error);
-                return String(value);
-            }
-        }
-
-        // Render data table dynamically
-        function renderTable(data) {
-            try {
-                if (!data || data.length === 0) {
-                    console.warn('No data provided to renderTable');
-                    return;
-                }
-
-                const tableHead = document.getElementById('tableHead');
-                const tableBody = document.getElementById('tableBody');
-
-                if (!tableHead || !tableBody) {
-                    console.error('Table elements not found');
-                    return;
-                }
-
-                // Clear existing content
-                tableHead.innerHTML = '';
-                tableBody.innerHTML = '';
-
-                // Define supporting/metadata columns to exclude from table display
-                const excludedColumns = [
-                    'month',           // Raw date field (we use month_label)
-                    'month_name',      // Redundant with month_label
-                    'quarter',         // Supporting metadata
-                    'year',            // Supporting metadata
-                    'usd_eur_rate_eom', // Exchange rate (supporting data)
-                    'days_performance'  // Derived text category
-                ];
-
-                // Get all unique keys from the data, excluding supporting columns
-                const allKeys = new Set();
-                data.forEach(row => {
-                    if (row && typeof row === 'object') {
-                        Object.keys(row).forEach(key => {
-                            if (!excludedColumns.includes(key)) {
-                                allKeys.add(key);
-                            }
-                        });
-                    }
-                });
-
-                if (allKeys.size === 0) {
-                    console.warn('No valid columns found in data');
-                    return;
-                }
-
-                // Convert to array and sort for consistent ordering (prioritize core business metrics)
-                const orderedKeys = ['month_label', 'gmv', 'funded_amount', 'avg_days_outstanding', 'num_invoices', 'num_boxes', 'cash_drag'];
-                const remainingKeys = Array.from(allKeys).filter(key => !orderedKeys.includes(key)).sort();
-                const columns = [...orderedKeys.filter(key => allKeys.has(key)), ...remainingKeys];
-
-                // Create table header
-                const headerRow = document.createElement('tr');
-                columns.forEach(key => {
-                    const th = document.createElement('th');
-                    th.textContent = formatColumnHeader(key);
-                    headerRow.appendChild(th);
-                });
-                tableHead.appendChild(headerRow);
-
-                // Create table rows
-                data.forEach((row, index) => {
-                    try {
-                        const tr = document.createElement('tr');
-
-                        columns.forEach(key => {
-                            const td = document.createElement('td');
-                            td.className = key === 'month_label' ? 'month-cell' : 'number-cell';
-                            td.textContent = formatCellValue(key, row[key]);
-                            tr.appendChild(td);
-                        });
-
-                        tableBody.appendChild(tr);
-                    } catch (rowError) {
-                        console.error(`Error rendering row ${index}:`, rowError, row);
-                    }
-                });
-
-                console.log(`Table rendered successfully with ${columns.length} columns and ${data.length} rows`);
-
-            } catch (error) {
-                console.error('Error in renderTable:', error);
-                // Fallback to show an error message
-                const tableBody = document.getElementById('tableBody');
-                if (tableBody) {
-                    tableBody.innerHTML = '<tr><td colspan="100%">Error loading table data</td></tr>';
+        // Get latest index with non-null data
+        function getLatestNonNullIndex() {
+            const values = getValues();
+            for (let i = dashboardData.periods.length - 1; i >= 0; i--) {
+                // Check if any major metric has data at this index
+                if (values['GMV'][i] !== null ||
+                    values['Arrangement Fees'][i] !== null) {
+                    return i;
                 }
             }
+            return dashboardData.periods.length - 1;
         }
 
-        function renderCharts(data) {
-            console.log('Rendering charts with data:', data);
+        // Update current period display
+        function updateCurrentPeriodDisplay() {
+            let displayText = '-';
 
-            // Filter out null values for charts
-            const validData = data.filter(d => d.gmv != null && d.funded_amount != null);
-            console.log('Valid data points:', validData.length);
+            if (currentPeriodIndex === null) {
+                const index = getLatestNonNullIndex();
+                displayText = dashboardData.periods[index];
+            } else if (currentPeriodIndex === -1) {
+                displayText = 'YTD';
+            } else if (currentPeriodIndex === -2) {
+                displayText = 'LTM';
+            } else {
+                displayText = dashboardData.periods[currentPeriodIndex];
+            }
 
-            // Revenue Chart
-            revenueChart = new Chart(document.getElementById('revenueChart'), {
-                type: 'line',
-                data: {
-                    labels: validData.map(d => d.month_label),
-                    datasets: [{
-                        label: 'GMV',
-                        data: validData.map(d => d.gmv),
-                        borderColor: '#013E3F',
-                        backgroundColor: 'rgba(1, 62, 63, 0.1)',
-                        tension: 0.3,
-                        borderWidth: 2,
-                        datalabels: {
-                            align: 'top',
-                            anchor: 'end'
-                        }
-                    }, {
-                        label: 'Funded Amount',
-                        data: validData.map(d => d.funded_amount),
-                        borderColor: '#009091',
-                        backgroundColor: 'rgba(0, 144, 145, 0.1)',
-                        tension: 0.3,
-                        borderWidth: 2,
-                        datalabels: {
-                            align: 'bottom',
-                            anchor: 'start'
-                        }
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    layout: {
-                        padding: {
-                            top: 10,
-                            bottom: 10,
-                            left: 30,
-                            right: 10
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                color: '#222222',
-                                font: {
-                                    family: 'Segoe UI, Inter, Arial, sans-serif',
-                                    size: 14
-                                },
-                                padding: 20
-                            }
-                        },
-                        datalabels: {
-                            display: function(context) {
-                                return true;
-                            },
-                            color: '#222222',
-                            font: {
-                                size: 10,
-                                weight: 500
-                            },
-                            formatter: function(value) {
-                                return formatValue(value);
-                            },
-                            backgroundColor: 'rgba(240, 240, 240, 0.95)',
-                            borderRadius: 4,
-                            padding: 4,
-                            offset: 12,
-                            clip: false,
-                            listeners: {
-                                enter: function(context) {
-                                    return false;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            grace: '15%',
-                            ticks: {
-                                color: '#666666',
-                                font: {
-                                    family: 'Segoe UI, Inter, Arial, sans-serif'
-                                },
-                                callback: function(value) {
-                                    return formatValue(value);
-                                }
-                            },
-                            grid: {
-                                color: 'rgba(102, 102, 102, 0.2)',
-                                borderDash: [3, 3],
-                                drawBorder: false
-                            }
-                        },
-                        x: {
-                            ticks: {
-                                color: '#666666',
-                                font: {
-                                    family: 'Segoe UI, Inter, Arial, sans-serif'
-                                }
-                            },
-                            grid: {
-                                color: 'rgba(102, 102, 102, 0.2)',
-                                borderDash: [3, 3],
-                                drawBorder: false
-                            }
-                        }
-                    }
-                }
+            document.getElementById('currentPeriodDisplay').textContent = displayText;
+        }
+
+        // Set view mode
+        function setViewMode(mode) {
+            viewMode = mode;
+
+            // Update button states
+            document.querySelectorAll('.view-toggle-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.view === mode);
             });
 
-            // Operational Chart
-            const validOpData = data.filter(d => d.num_invoices != null && d.num_boxes != null);
-            console.log('Valid operational data points:', validOpData.length);
+            // Update filter summary
+            updateFilterSummary();
 
-            operationalChart = new Chart(document.getElementById('operationalChart'), {
-                type: 'bar',
+            // Re-render all charts
+            renderAll();
+        }
+
+        // Set currency
+        function setCurrency(curr) {
+            currency = curr;
+
+            // Update button states
+            document.querySelectorAll('.view-toggle-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.currency === curr);
+            });
+
+            // Re-render all dashboard
+            renderAll();
+        }
+
+        // Apply date range filters
+        function applyFilters() {
+            const startValue = document.getElementById('filterStartMonth').value;
+            const endValue = document.getElementById('filterEndMonth').value;
+
+            dateRangeStart = startValue === '' ? null : parseInt(startValue);
+            dateRangeEnd = endValue === '' ? null : parseInt(endValue);
+
+            // Update filter summary
+            updateFilterSummary();
+
+            renderAll();
+        }
+
+        // Reset all filters
+        function resetFilters() {
+            viewMode = 'monthly';
+            dateRangeStart = null;
+            dateRangeEnd = null;
+            currentPeriodIndex = null;
+
+            document.getElementById('filterStartMonth').value = '';
+            document.getElementById('filterEndMonth').value = '';
+            document.getElementById('currentPeriodSelect').value = '';
+
+            document.querySelectorAll('.view-toggle-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.view === 'monthly');
+            });
+
+            currentPeriodIndex = getLatestNonNullIndex();
+            document.getElementById('currentPeriodSelect').value = currentPeriodIndex;
+            updateCurrentPeriodDisplay();
+
+            // Clear filter summary
+            updateFilterSummary();
+
+            renderAll();
+        }
+
+        // Get filtered data based on current filter settings
+        function getFilteredData() {
+            let data = { periods: [...dashboardData.periods], values: {} };
+
+            // Copy all values using currency-aware values
+            const values = getValues();
+            Object.keys(values).forEach(metric => {
+                data.values[metric] = [...values[metric]];
+            });
+
+            // Apply date range filter
+            if (dateRangeStart !== null || dateRangeEnd !== null) {
+                const start = dateRangeStart !== null ? dateRangeStart : 0;
+                const end = dateRangeEnd !== null ? dateRangeEnd : data.periods.length - 1;
+
+                data.periods = data.periods.slice(start, end + 1);
+                Object.keys(data.values).forEach(metric => {
+                    data.values[metric] = data.values[metric].slice(start, end + 1);
+                });
+            }
+
+            // Apply quarterly aggregation if needed
+            if (viewMode === 'quarterly') {
+                data = aggregateQuarterly(data);
+            }
+
+            return data;
+        }
+
+        // Aggregate data by quarter
+        function aggregateQuarterly(data) {
+            const quarters = {};
+            const quarterValues = {};
+
+            // Group data by quarter
+            data.periods.forEach((period, idx) => {
+                const quarter = getQuarter(period);
+                if (!quarters[quarter]) {
+                    quarters[quarter] = [];
+                    quarterValues[quarter] = {};
+                }
+                quarters[quarter].push(idx);
+            });
+
+            // Aggregate values
+            const aggregated = {
+                periods: Object.keys(quarters),
+                values: {}
+            };
+
+            // For each metric, aggregate by quarter
+            Object.keys(data.values).forEach(metric => {
+                aggregated.values[metric] = [];
+
+                Object.keys(quarters).forEach(quarter => {
+                    const indices = quarters[quarter];
+                    const values = indices.map(i => data.values[metric][i]).filter(v => v !== null && v !== undefined);
+
+                    if (values.length === 0) {
+                        aggregated.values[metric].push(null);
+                    } else {
+                        // Sum for most metrics, average for rates/percentages
+                        const avgMetrics = ['Cash Drag', '% GMV Insured', 'Avg Days Outstanding', 'exch_rate'];
+                        if (avgMetrics.includes(metric)) {
+                            aggregated.values[metric].push(values.reduce((a, b) => a + b, 0) / values.length);
+                        } else {
+                            aggregated.values[metric].push(values.reduce((a, b) => a + b, 0));
+                        }
+                    }
+                });
+            });
+
+            return aggregated;
+        }
+
+        // Get quarter from period string (e.g., "Jan-25" -> "Q1-25")
+        function getQuarter(period) {
+            const monthMap = {
+                'Jan': 'Q1', 'Feb': 'Q1', 'Mar': 'Q1',
+                'Apr': 'Q2', 'May': 'Q2', 'Jun': 'Q2',
+                'Jul': 'Q3', 'Aug': 'Q3', 'Sep': 'Q3',
+                'Oct': 'Q4', 'Nov': 'Q4', 'Dec': 'Q4'
+            };
+
+            const parts = period.split('-');
+            if (parts.length === 2) {
+                const month = parts[0];
+                const year = parts[1];
+                return `${monthMap[month]}-${year}`;
+            }
+            return period;
+        }
+
+        // Render all dashboard components
+        function renderAll() {
+            renderKPIs();
+            renderCharts();
+            renderGauges();
+            renderTables();
+        }
+
+        // Helper: Get current values object based on currency
+        function getValues() {
+            if (!dashboardData) return null;
+            return currency === 'usd' ? dashboardData.values_usd : dashboardData.values_eur;
+        }
+
+        // Helper: Get currency symbol
+        function getCurrencySymbol() {
+            return currency === 'usd' ? '$' : '€';
+        }
+
+        // Helper: Get value from data
+        function getValue(metric, index) {
+            const values = getValues();
+            if (!values || !values[metric]) return null;
+            return values[metric][index];
+        }
+
+        // Helper: Get latest non-null value
+        function getLatest(metric) {
+            const values = getValues();
+            if (!values || !values[metric]) return null;
+            const metricValues = values[metric];
+            for (let i = metricValues.length - 1; i >= 0; i--) {
+                if (metricValues[i] !== null && metricValues[i] !== undefined) {
+                    return metricValues[i];
+                }
+            }
+            return null;
+        }
+
+        // Helper: Sum all values
+        function sum(metric) {
+            const values = getValues();
+            if (!values || !values[metric]) return 0;
+            return values[metric].reduce((acc, val) => acc + (val || 0), 0);
+        }
+
+        // Helper: Average of non-null values
+        function average(metric, filter = null) {
+            const values = getValues();
+            if (!values || !values[metric]) return 0;
+            const metricValues = values[metric].filter(v => v !== null && v !== undefined);
+            if (filter) {
+                // Apply filter for specific cases (e.g., avg_days_outstanding > 0)
+                const filtered = metricValues.filter(filter);
+                if (filtered.length === 0) return 0;
+                return filtered.reduce((acc, val) => acc + val, 0) / filtered.length;
+            }
+            if (metricValues.length === 0) return 0;
+            return metricValues.reduce((acc, val) => acc + val, 0) / metricValues.length;
+        }
+
+        // Format currency in millions
+        function formatCurrencyM(value) {
+            if (value === null || value === undefined) return 'N/A';
+            return getCurrencySymbol() + (value / 1000000).toFixed(2) + 'M';
+        }
+
+        // Format currency
+        function formatCurrency(value) {
+            if (value === null || value === undefined) return 'N/A';
+            return getCurrencySymbol() + Math.round(value).toLocaleString();
+        }
+
+        // Format percentage
+        function formatPercentage(value) {
+            if (value === null || value === undefined) return 'N/A';
+            return (value * 100).toFixed(1) + '%';
+        }
+
+        // Format number
+        function formatNumber(value) {
+            if (value === null || value === undefined) return 'N/A';
+            return Math.round(value).toLocaleString();
+        }
+
+        // Get data for reference period
+        function getReferenceData() {
+            const latestIdx = getLatestNonNullIndex();
+
+            if (currentPeriodIndex === null || currentPeriodIndex >= 0) {
+                // Specific month
+                const idx = currentPeriodIndex !== null ? currentPeriodIndex : latestIdx;
+                return {
+                    type: 'month',
+                    label: dashboardData.periods[idx],
+                    startIdx: idx,
+                    endIdx: idx
+                };
+            } else if (currentPeriodIndex === -1) {
+                // YTD - from start of year to latest
+                const latestPeriod = dashboardData.periods[latestIdx];
+                const year = latestPeriod.split('-')[1];
+                let startIdx = 0;
+                for (let i = 0; i <= latestIdx; i++) {
+                    if (dashboardData.periods[i].includes(year)) {
+                        startIdx = i;
+                        break;
+                    }
+                }
+                return {
+                    type: 'ytd',
+                    label: 'YTD',
+                    startIdx: startIdx,
+                    endIdx: latestIdx
+                };
+            } else if (currentPeriodIndex === -2) {
+                // LTM - last 12 months
+                return {
+                    type: 'ltm',
+                    label: 'LTM',
+                    startIdx: Math.max(0, latestIdx - 11),
+                    endIdx: latestIdx
+                };
+            }
+        }
+
+        // Calculate sum for reference period
+        function sumForPeriod(metric, refData) {
+            const values = getValues();
+            let total = 0;
+            for (let i = refData.startIdx; i <= refData.endIdx; i++) {
+                const val = values[metric][i];
+                if (val !== null && val !== undefined) {
+                    total += val;
+                }
+            }
+            return total;
+        }
+
+        // Calculate average for reference period
+        function avgForPeriod(metric, refData, filter = null) {
+            const values = getValues();
+            let metricValues = [];
+            for (let i = refData.startIdx; i <= refData.endIdx; i++) {
+                const val = values[metric][i];
+                if (val !== null && val !== undefined) {
+                    metricValues.push(val);
+                }
+            }
+            if (filter) {
+                metricValues = metricValues.filter(filter);
+            }
+            if (metricValues.length === 0) return 0;
+            return metricValues.reduce((a, b) => a + b, 0) / metricValues.length;
+        }
+
+        // Get value for reference period (for single-value metrics)
+        function getValueForPeriod(metric, refData) {
+            const values = getValues();
+            if (refData.type === 'month') {
+                return values[metric][refData.endIdx];
+            } else {
+                // For YTD/LTM, use latest value
+                return values[metric][refData.endIdx];
+            }
+        }
+
+        // Render KPI Cards
+        function renderKPIs() {
+            const kpiGrid = document.getElementById('kpiGrid');
+            const refData = getReferenceData();
+
+            // Get filtered data to respect date range selection
+            const filteredData = getFilteredData();
+
+            // Calculate KPIs based on filtered data
+            const totalGMV = filteredData.values['GMV'].reduce((sum, val) => sum + (val || 0), 0);
+            const totalFunded = filteredData.values['Funded Amount'].reduce((sum, val) => sum + (val || 0), 0);
+
+            // For cash drag: use average for YTD/LTM or if date range spans multiple periods
+            const cashDragValues = filteredData.values['Cash Drag'].filter(v => v !== null && v !== undefined);
+            const cashDrag = (refData.type === 'ytd' || refData.type === 'ltm' || filteredData.periods.length > 1)
+                ? (cashDragValues.reduce((sum, val) => sum + val, 0) / cashDragValues.length)
+                : (cashDragValues[cashDragValues.length - 1] || 0);
+
+            const portfolioValues = filteredData.values['Avg Portfolio Outstanding'].filter(v => v !== null && v !== undefined);
+            const avgPortfolio = portfolioValues.reduce((sum, val) => sum + val, 0) / (portfolioValues.length || 1);
+
+            const totalInvoices = filteredData.values['# Invoices'].reduce((sum, val) => sum + (val || 0), 0);
+
+            const daysValues = filteredData.values['Avg Days Outstanding'].filter(v => v !== null && v !== undefined && v > 0);
+            const avgDaysOutstanding = daysValues.reduce((sum, val) => sum + val, 0) / (daysValues.length || 1);
+
+            // Get previous cash drag for comparison (only for single month view without date range filter)
+            let cashDragChange = null;
+            if (refData.type === 'month' && refData.endIdx > 0 && dateRangeStart === null && dateRangeEnd === null && cashDragValues.length === 1) {
+                // Find the previous month with data
+                const values = getValues();
+                let prevIdx = refData.endIdx - 1;
+                while (prevIdx >= 0 && values['Cash Drag'][prevIdx] === null) {
+                    prevIdx--;
+                }
+                if (prevIdx >= 0) {
+                    const prevCashDrag = values['Cash Drag'][prevIdx];
+                    if (prevCashDrag !== null) {
+                        cashDragChange = ((cashDrag - prevCashDrag) / prevCashDrag) * 100;
+                    }
+                }
+            }
+
+            // Determine cash drag status
+            let cashDragClass = '';
+            if (cashDrag < 0.20) cashDragClass = 'good';
+            else if (cashDrag >= 0.20 && cashDrag <= 0.30) cashDragClass = 'warning';
+            else cashDragClass = 'danger';
+
+            // Determine days outstanding status
+            let daysClass = '';
+            if (avgDaysOutstanding < 20) daysClass = 'good';
+            else if (avgDaysOutstanding >= 20 && avgDaysOutstanding <= 25) daysClass = 'good';
+            else daysClass = 'warning';
+
+            // Determine period description based on filters
+            let periodDesc;
+            if (dateRangeStart !== null || dateRangeEnd !== null) {
+                // Date range is active - show the range
+                const startLabel = dateRangeStart !== null ? dashboardData.periods[dateRangeStart] : filteredData.periods[0];
+                const endLabel = dateRangeEnd !== null ? dashboardData.periods[dateRangeEnd] : filteredData.periods[filteredData.periods.length - 1];
+                periodDesc = `(${startLabel} → ${endLabel})`;
+            } else {
+                periodDesc = refData.type === 'month' ? `for ${refData.label}` : `(${refData.label})`;
+            }
+
+            kpiGrid.innerHTML = `
+                <div class="kpi-card">
+                    <div class="kpi-label">Total GMV ${periodDesc}</div>
+                    <div class="kpi-value">${formatCurrencyM(totalGMV)}</div>
+                    <div class="kpi-description">Gross Merchandise Value</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Total Funded ${periodDesc}</div>
+                    <div class="kpi-value">${formatCurrencyM(totalFunded)}</div>
+                    <div class="kpi-description">Amount funded to clients</div>
+                </div>
+                <div class="kpi-card ${cashDragClass}">
+                    <div class="kpi-label">${(filteredData.periods.length > 1 || refData.type !== 'month') ? 'Avg Cash Drag' : 'Cash Drag'} ${periodDesc}</div>
+                    <div class="kpi-value">${formatPercentage(cashDrag)}</div>
+                    ${cashDragChange ? `<div class="kpi-change ${cashDragChange > 0 ? 'negative' : 'positive'}">
+                        ${cashDragChange > 0 ? '↑' : '↓'} ${Math.abs(cashDragChange).toFixed(1)}% vs previous
+                    </div>` : ''}
+                    <div class="kpi-description">Idle capital - lower is better</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Avg Portfolio ${periodDesc}</div>
+                    <div class="kpi-value">${formatCurrencyM(avgPortfolio)}</div>
+                    <div class="kpi-description">Capital deployed in portfolio</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Total Invoices ${periodDesc}</div>
+                    <div class="kpi-value">${formatNumber(totalInvoices)}</div>
+                    <div class="kpi-description">Number of invoices processed</div>
+                </div>
+                <div class="kpi-card ${daysClass}">
+                    <div class="kpi-label">Avg Days Out ${periodDesc}</div>
+                    <div class="kpi-value">${avgDaysOutstanding.toFixed(0)} days</div>
+                    <div class="kpi-description">Average collection period</div>
+                </div>
+            `;
+        }
+
+        // Render all charts
+        function renderCharts() {
+            // Destroy existing charts
+            Object.values(charts).forEach(chart => {
+                if (chart && typeof chart.destroy === 'function') {
+                    chart.destroy();
+                }
+            });
+            charts = {};
+
+            renderGMVFundedChart();
+            renderRevenueBreakdownChart();
+            renderWaterfallChart();
+            renderPortfolioHealthChart();
+            renderCashDragChart();
+            renderFXImpactChart();
+            renderOperationalChart();
+        }
+
+        // Chart 1: GMV vs Funded Amount Trend
+        function renderGMVFundedChart() {
+            const ctx = document.getElementById('gmvFundedChart');
+
+            const filteredData = getFilteredData();
+            const labels = filteredData.periods;
+            const gmvData = filteredData.values['GMV'];
+            const fundedData = filteredData.values['Funded Amount'];
+
+            charts.gmvFunded = new Chart(ctx, {
+                type: 'line',
                 data: {
-                    labels: validOpData.map(d => d.month_label),
-                    datasets: [{
-                        label: 'Invoices',
-                        data: validOpData.map(d => d.num_invoices),
-                        backgroundColor: '#006768'
-                    }, {
-                        label: 'Boxes',
-                        data: validOpData.map(d => d.num_boxes),
-                        backgroundColor: '#20D9DC'
-                    }]
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'GMV',
+                            data: gmvData,
+                            borderColor: colors.primary,
+                            backgroundColor: colors.primary + '20',
+                            tension: 0.4,
+                            borderWidth: 3,
+                            fill: true
+                        },
+                        {
+                            label: 'Funded Amount',
+                            data: fundedData,
+                            borderColor: colors.secondary,
+                            backgroundColor: colors.secondary + '20',
+                            tension: 0.4,
+                            borderWidth: 3,
+                            fill: true
+                        }
+                    ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    layout: {
-                        padding: {
-                            top: 10,
-                            bottom: 10,
-                            left: 30,
-                            right: 10
-                        }
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
                     },
                     plugins: {
                         legend: {
                             position: 'bottom',
-                            labels: {
-                                color: '#222222',
-                                font: {
-                                    family: 'Segoe UI, Inter, Arial, sans-serif',
-                                    size: 14
-                                },
-                                padding: 20
-                            }
+                            labels: { font: { size: 12 } }
                         },
                         datalabels: {
                             display: true,
-                            align: 'top',
-                            anchor: 'end',
+                            align: context => {
+                                // Dynamic alignment based on position in chart and dataset
+                                const datasetIndex = context.datasetIndex;
+                                const dataIndex = context.dataIndex;
+                                const value = context.dataset.data[dataIndex];
+                                if (!value) return 'top';
+
+                                // GMV (dataset 0) - place above, Funded (dataset 1) - place below if too close
+                                if (datasetIndex === 0) {
+                                    return 'top';
+                                } else {
+                                    // Check if values are too close (within 15%)
+                                    const gmvValue = context.chart.data.datasets[0].data[dataIndex];
+                                    if (gmvValue && Math.abs(value - gmvValue) / gmvValue < 0.15) {
+                                        return 'bottom';
+                                    }
+                                    return 'top';
+                                }
+                            },
+                            anchor: context => {
+                                const datasetIndex = context.datasetIndex;
+                                if (datasetIndex === 1) {
+                                    const dataIndex = context.dataIndex;
+                                    const value = context.dataset.data[dataIndex];
+                                    const gmvValue = context.chart.data.datasets[0].data[dataIndex];
+                                    if (gmvValue && Math.abs(value - gmvValue) / gmvValue < 0.15) {
+                                        return 'start';
+                                    }
+                                }
+                                return 'end';
+                            },
                             color: '#222222',
                             font: {
-                                size: 10,
+                                size: 12,
                                 weight: 500
                             },
-                            formatter: function(value) {
-                                return formatValue(value);
+                            formatter: value => {
+                                if (!value) return '';
+                                return getCurrencySymbol() + (value / 1000000).toFixed(1) + 'M';
                             },
-                            backgroundColor: 'rgba(240, 240, 240, 0.95)',
+                            backgroundColor: 'rgba(255, 255, 255, 0.8)',
                             borderRadius: 4,
-                            padding: 4,
-                            offset: 12,
-                            clip: false
+                            padding: 4
                         }
                     },
                     scales: {
                         y: {
-                            grace: '15%',
+                            type: 'linear',
+                            position: 'left',
+                            title: { display: true, text: 'Amount (' + getCurrencySymbol() + ')' },
                             ticks: {
-                                color: '#666666',
-                                font: {
-                                    family: 'Segoe UI, Inter, Arial, sans-serif'
-                                },
-                                callback: function(value) {
-                                    return formatValue(value);
-                                }
-                            },
-                            grid: {
-                                color: 'rgba(102, 102, 102, 0.2)',
-                                borderDash: [3, 3],
-                                drawBorder: false
-                            }
-                        },
-                        x: {
-                            ticks: {
-                                color: '#666666',
-                                font: {
-                                    family: 'Segoe UI, Inter, Arial, sans-serif'
-                                }
-                            },
-                            grid: {
-                                color: 'rgba(102, 102, 102, 0.2)',
-                                borderDash: [3, 3],
-                                drawBorder: false
+                                callback: value => getCurrencySymbol() + (value / 1000000).toFixed(1) + 'M'
                             }
                         }
                     }
                 }
             });
         }
-        
+
+        // Chart 2: Revenue Breakdown
+        function renderRevenueBreakdownChart() {
+            const ctx = document.getElementById('revenueBreakdownChart');
+
+            const filteredData = getFilteredData();
+
+            charts.revenueBreakdown = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: filteredData.periods,
+                    datasets: [
+                        {
+                            label: 'Arrangement Fees',
+                            data: filteredData.values['Arrangement Fees'],
+                            backgroundColor: colors.primary
+                        },
+                        {
+                            label: 'Logistic Fees',
+                            data: filteredData.values['Logistic Fees'],
+                            backgroundColor: colors.secondary
+                        },
+                        {
+                            label: 'Cargo Insurance Fees',
+                            data: filteredData.values['Cargo Insurance Fees'],
+                            backgroundColor: colors.accent1
+                        },
+                        {
+                            label: 'Docs Management Fees',
+                            data: filteredData.values['Docs Management Fees'],
+                            backgroundColor: colors.accent2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { font: { size: 11 } }
+                        },
+                        datalabels: {
+                            display: context => {
+                                const value = context.dataset.data[context.dataIndex];
+                                if (!value || value === 0) return false;
+
+                                // Calculate total for this stack
+                                const dataIndex = context.dataIndex;
+                                let total = 0;
+                                context.chart.data.datasets.forEach(dataset => {
+                                    const val = dataset.data[dataIndex];
+                                    if (val) total += val;
+                                });
+
+                                // Hide label if segment is less than 10% of total
+                                const percentage = total > 0 ? (value / total) : 0;
+                                return percentage >= 0.10;
+                            },
+                            color: '#FFFFFF',
+                            font: {
+                                size: 10,
+                                weight: 600
+                            },
+                            formatter: value => {
+                                if (!value || value === 0) return '';
+                                return getCurrencySymbol() + (value / 1000).toFixed(0) + 'K';
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { stacked: true },
+                        y: {
+                            stacked: true,
+                            ticks: {
+                                callback: value => getCurrencySymbol() + (value / 1000).toFixed(0) + 'K'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Chart 3: Waterfall Chart (approximated as bar chart)
+        function renderWaterfallChart() {
+            const ctx = document.getElementById('waterfallChart');
+            const refData = getReferenceData();
+
+            // Update subtitle with period info
+            const subtitle = document.getElementById('waterfallSubtitle');
+            if (refData.type === 'month') {
+                subtitle.textContent = `P&L breakdown for ${refData.label}`;
+            } else {
+                subtitle.textContent = `P&L breakdown (${refData.label})`;
+            }
+
+            // Calculate totals for reference period
+            const totalFees = sumForPeriod('Arrangement Fees', refData) +
+                             sumForPeriod('Logistic Fees', refData) +
+                             sumForPeriod('Cargo Insurance Fees', refData) +
+                             sumForPeriod('Docs Management Fees', refData) +
+                             sumForPeriod('Warehouse Destination Fees', refData);
+
+            const logisticCosts = sumForPeriod('Logistic Costs', refData);
+            const insuranceCosts = sumForPeriod('Cargo Insurance Costs', refData);
+            const fundsCosts = sumForPeriod('Cost of Funds (Accrued)', refData);
+            const docsCosts = sumForPeriod('Costs of Docs Delivery', refData);
+            const warehouseCosts = sumForPeriod('Warehouse Destination Costs', refData);
+
+            const netMargin = totalFees - logisticCosts - insuranceCosts - fundsCosts - docsCosts - warehouseCosts;
+
+            charts.waterfall = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Total Fees', 'Logistic Costs', 'Insurance Costs', 'Cost of Funds', 'Docs Costs', 'Warehouse Costs', 'Net Margin'],
+                    datasets: [{
+                        label: 'Amount',
+                        data: [totalFees, -logisticCosts, -insuranceCosts, -fundsCosts, -docsCosts, -warehouseCosts, netMargin],
+                        backgroundColor: [
+                            '#4CAF50',  // positive - Total Fees
+                            '#F44336',  // negative - Logistic Costs
+                            '#F44336',  // negative - Insurance Costs
+                            '#F44336',  // negative - Cost of Funds
+                            '#F44336',  // negative - Docs Costs
+                            '#F44336',  // negative - Warehouse Costs
+                            netMargin > 0 ? '#013E3F' : '#F44336'  // total - Net Margin
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            display: true,
+                            anchor: context => {
+                                const value = context.dataset.data[context.dataIndex];
+                                // Negative values: place label below the bar
+                                // Positive values: place label above the bar
+                                return value < 0 ? 'start' : 'end';
+                            },
+                            align: context => {
+                                const value = context.dataset.data[context.dataIndex];
+                                // Negative values: align above (since bar goes down)
+                                // Positive values: align above
+                                return value < 0 ? 'bottom' : 'top';
+                            },
+                            color: '#222222',
+                            formatter: value => getCurrencySymbol() + (Math.abs(value) / 1000).toFixed(0) + 'K',
+                            font: { size: 12, weight: 500 },
+                            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                            borderRadius: 4,
+                            padding: 4
+                        }
+                    },
+                    scales: {
+                        y: {
+                            ticks: {
+                                callback: value => getCurrencySymbol() + (value / 1000).toFixed(0) + 'K'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Chart 4: Portfolio Health
+        function renderPortfolioHealthChart() {
+            const ctx = document.getElementById('portfolioHealthChart');
+
+            const filteredData = getFilteredData();
+
+            charts.portfolioHealth = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: filteredData.periods,
+                    datasets: [
+                        {
+                            label: 'Days Outstanding',
+                            data: filteredData.values['Avg Days Outstanding'],
+                            borderColor: colors.primary,
+                            backgroundColor: colors.primary + '20',
+                            yAxisID: 'y',
+                            tension: 0.4,
+                            borderWidth: 2,
+                            fill: true
+                        },
+                        {
+                            label: 'Cash Drag %',
+                            data: filteredData.values['Cash Drag'].map(v => v ? v * 100 : null),
+                            borderColor: colors.warning,
+                            backgroundColor: colors.warning + '20',
+                            yAxisID: 'y1',
+                            tension: 0.4,
+                            borderWidth: 2,
+                            fill: true
+                        },
+                        {
+                            label: '% GMV Insured',
+                            data: filteredData.values['% GMV Insured'].map(v => v ? v * 100 : null),
+                            borderColor: colors.success,
+                            backgroundColor: colors.success + '40',
+                            yAxisID: 'y1',
+                            type: 'bar'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { font: { size: 11 } }
+                        },
+                        datalabels: {
+                            display: context => {
+                                const value = context.dataset.data[context.dataIndex];
+                                if (!value) return false;
+
+                                // Only show labels for the bar chart (% GMV Insured)
+                                if (context.datasetIndex !== 2) return false;
+
+                                // Hide if value is less than 5%
+                                return value >= 5;
+                            },
+                            color: '#FFFFFF',
+                            font: {
+                                size: 10,
+                                weight: 600
+                            },
+                            formatter: value => {
+                                if (!value) return '';
+                                return value.toFixed(0) + '%';
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            position: 'left',
+                            title: { display: true, text: 'Days' }
+                        },
+                        y1: {
+                            type: 'linear',
+                            position: 'right',
+                            title: { display: true, text: 'Percentage (%)' },
+                            grid: { drawOnChartArea: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Chart 5: Cash Drag Trend
+        function renderCashDragChart() {
+            const ctx = document.getElementById('cashDragChart');
+
+            const filteredData = getFilteredData();
+
+            const cashDragPct = filteredData.values['Cash Drag'].map(v => v ? v * 100 : null);
+
+            charts.cashDrag = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: filteredData.periods,
+                    datasets: [
+                        {
+                            label: 'Cash Drag %',
+                            data: cashDragPct,
+                            borderColor: colors.warning,
+                            backgroundColor: colors.warning + '40',
+                            tension: 0.4,
+                            borderWidth: 3,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            display: true,
+                            align: context => {
+                                // Use dynamic alignment: if value is high, place below; if low, place above
+                                const value = context.dataset.data[context.dataIndex];
+                                if (!value) return 'top';
+                                // If above 25%, place label below to avoid hitting top
+                                return value > 25 ? 'bottom' : 'top';
+                            },
+                            anchor: context => {
+                                const value = context.dataset.data[context.dataIndex];
+                                if (!value) return 'end';
+                                return value > 25 ? 'start' : 'end';
+                            },
+                            color: '#222222',
+                            font: {
+                                size: 12,
+                                weight: 500
+                            },
+                            formatter: value => {
+                                if (!value) return '';
+                                return value.toFixed(1) + '%';
+                            },
+                            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                            borderRadius: 4,
+                            padding: 4
+                        },
+                        annotation: {
+                            annotations: {
+                                target: {
+                                    type: 'line',
+                                    yMin: 20,
+                                    yMax: 20,
+                                    borderColor: colors.success,
+                                    borderWidth: 2,
+                                    borderDash: [5, 5],
+                                    label: {
+                                        content: 'Target: 20%',
+                                        enabled: true,
+                                        position: 'end'
+                                    }
+                                },
+                                warning: {
+                                    type: 'line',
+                                    yMin: 30,
+                                    yMax: 30,
+                                    borderColor: colors.danger,
+                                    borderWidth: 2,
+                                    borderDash: [5, 5],
+                                    label: {
+                                        content: 'Warning: 30%',
+                                        enabled: true,
+                                        position: 'end'
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            title: { display: true, text: 'Cash Drag (%)' },
+                            ticks: {
+                                callback: value => value + '%'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Chart 6: FX Impact
+        function renderFXImpactChart() {
+            const ctx = document.getElementById('fxImpactChart');
+
+            const filteredData = getFilteredData();
+
+            charts.fxImpact = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: filteredData.periods,
+                    datasets: [
+                        {
+                            label: 'GMV',
+                            data: filteredData.values['GMV'],
+                            backgroundColor: colors.primary + '80',
+                            yAxisID: 'y1'
+                        },
+                        {
+                            label: 'Exchange Rate',
+                            data: filteredData.values['exch_rate'],
+                            borderColor: colors.danger,
+                            backgroundColor: colors.danger,
+                            type: 'line',
+                            yAxisID: 'y',
+                            tension: 0.4,
+                            borderWidth: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { font: { size: 11 } }
+                        },
+                        datalabels: {
+                            display: context => {
+                                // Only show labels for GMV bars (dataset 0)
+                                if (context.datasetIndex !== 0) return false;
+
+                                const value = context.dataset.data[context.dataIndex];
+                                return value && value > 0;
+                            },
+                            color: '#FFFFFF',
+                            font: {
+                                size: 11,
+                                weight: 600
+                            },
+                            formatter: value => {
+                                if (!value) return '';
+                                return getCurrencySymbol() + (value / 1000000).toFixed(1) + 'M';
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            position: 'right',
+                            title: { display: true, text: 'Exchange Rate' },
+                            grid: { drawOnChartArea: false }
+                        },
+                        y1: {
+                            type: 'linear',
+                            position: 'left',
+                            title: { display: true, text: 'GMV (' + getCurrencySymbol() + ')' },
+                            ticks: {
+                                callback: value => getCurrencySymbol() + (value / 1000000).toFixed(1) + 'M'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Chart 7: Operational Metrics
+        function renderOperationalChart() {
+            const ctx = document.getElementById('operationalChart');
+
+            const filteredData = getFilteredData();
+
+            const invoices = filteredData.values['# Invoices'];
+            const boxes = filteredData.values['# Boxes'];
+            const boxesPerInvoice = invoices.map((inv, i) => {
+                return (inv && boxes[i]) ? boxes[i] / inv : null;
+            });
+
+            charts.operational = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: filteredData.periods,
+                    datasets: [
+                        {
+                            label: 'Invoices',
+                            data: invoices,
+                            backgroundColor: colors.primary,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Boxes',
+                            data: boxes,
+                            backgroundColor: colors.accent1,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Boxes per Invoice',
+                            data: boxesPerInvoice,
+                            borderColor: colors.danger,
+                            backgroundColor: colors.danger,
+                            type: 'line',
+                            yAxisID: 'y1',
+                            tension: 0.4,
+                            borderWidth: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { font: { size: 11 } }
+                        },
+                        datalabels: {
+                            display: context => {
+                                const value = context.dataset.data[context.dataIndex];
+                                return value && value > 0;
+                            },
+                            color: context => {
+                                // White for bars (Invoices and Boxes), dark for line (Boxes per Invoice)
+                                return context.datasetIndex < 2 ? '#FFFFFF' : '#222222';
+                            },
+                            align: context => {
+                                // Bars: center inside, Line: above
+                                return context.datasetIndex < 2 ? 'center' : 'top';
+                            },
+                            anchor: context => {
+                                return context.datasetIndex < 2 ? 'center' : 'end';
+                            },
+                            backgroundColor: context => {
+                                // No background for bars, white background for line
+                                return context.datasetIndex < 2 ? 'transparent' : 'rgba(255, 255, 255, 0.8)';
+                            },
+                            borderRadius: 4,
+                            padding: 4,
+                            font: {
+                                size: 11,
+                                weight: 600
+                            },
+                            formatter: (value, context) => {
+                                if (!value) return '';
+                                if (context.datasetIndex < 2) {
+                                    // Invoices and Boxes - show as integer
+                                    return Math.round(value);
+                                } else {
+                                    // Boxes per Invoice - show with 1 decimal
+                                    return value.toFixed(1);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            position: 'left',
+                            title: { display: true, text: 'Count' }
+                        },
+                        y1: {
+                            type: 'linear',
+                            position: 'right',
+                            title: { display: true, text: 'Boxes per Invoice' },
+                            grid: { drawOnChartArea: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Render Gauges
+        function renderGauges() {
+            const gaugeGrid = document.getElementById('gaugeGrid');
+            const refData = getReferenceData();
+
+            // Calculate values for reference period
+            const costOfFunds = sumForPeriod('Cost of Funds (Accrued)', refData);
+            const accruedInterests = sumForPeriod('Accrued Interests', refData) || 1;
+            const costOfFundsEfficiency = (costOfFunds / accruedInterests) * 100;
+
+            const insuranceFees = sumForPeriod('Cargo Insurance Fees', refData);
+            const insuranceCosts = sumForPeriod('Cargo Insurance Costs', refData);
+            const insuranceMargin = insuranceFees > 0 ? ((insuranceFees - insuranceCosts) / insuranceFees) * 100 : 0;
+
+            const logisticFees = sumForPeriod('Logistic Fees', refData);
+            const logisticCosts = sumForPeriod('Logistic Costs', refData);
+            const logisticsMargin = logisticFees > 0 ? ((logisticFees - logisticCosts) / logisticFees) * 100 : 0;
+
+            function getGaugeColor(value, target) {
+                const ratio = value / target;
+                if (ratio <= 0.9) return colors.success;
+                if (ratio <= 1.1) return colors.warning;
+                return colors.danger;
+            }
+
+            gaugeGrid.innerHTML = `
+                <div class="gauge-container">
+                    <div class="gauge-label">Cost of Funds Efficiency</div>
+                    <div class="gauge-value">${costOfFundsEfficiency.toFixed(1)}%</div>
+                    <div class="gauge-bar">
+                        <div class="gauge-fill" style="width: ${Math.min(costOfFundsEfficiency, 100)}%; background: ${getGaugeColor(costOfFundsEfficiency, 100)}"></div>
+                    </div>
+                    <div class="kpi-description">Target: 100% - Cost of funds as % of interest earned</div>
+                </div>
+                <div class="gauge-container">
+                    <div class="gauge-label">Insurance Margin</div>
+                    <div class="gauge-value">${insuranceMargin.toFixed(1)}%</div>
+                    <div class="gauge-bar">
+                        <div class="gauge-fill" style="width: ${Math.min((insuranceMargin / 40) * 100, 100)}%; background: ${getGaugeColor(insuranceMargin, 40)}"></div>
+                    </div>
+                    <div class="kpi-description">Target: 40% - Insurance profit margin</div>
+                </div>
+                <div class="gauge-container">
+                    <div class="gauge-label">Logistics Margin</div>
+                    <div class="gauge-value">${logisticsMargin.toFixed(1)}%</div>
+                    <div class="gauge-bar">
+                        <div class="gauge-fill" style="width: ${Math.min((logisticsMargin / 30) * 100, 100)}%; background: ${getGaugeColor(logisticsMargin, 30)}"></div>
+                    </div>
+                    <div class="kpi-description">Target: 30% - Logistics profit margin</div>
+                </div>
+            `;
+        }
+
+        // Render Tables
+        function renderTables() {
+            renderMonthlyPerformanceTable();
+            renderFeeProfitabilityTable();
+        }
+
+        // Monthly Performance Table
+        function renderMonthlyPerformanceTable() {
+            const thead = document.getElementById('monthlyTableHead');
+            const tbody = document.getElementById('monthlyTableBody');
+
+            thead.innerHTML = `
+                <tr>
+                    <th>Month</th>
+                    <th class="number">GMV</th>
+                    <th class="number">Funded</th>
+                    <th class="number">Days Outstanding</th>
+                    <th class="number">Total Revenue</th>
+                    <th class="number">Total Costs</th>
+                    <th class="number">Net Margin</th>
+                    <th class="number">Cash Drag</th>
+                </tr>
+            `;
+
+            let rows = '';
+            dashboardData.periods.forEach((period, i) => {
+                const gmv = getValue('GMV', i);
+                const funded = getValue('Funded Amount', i);
+                const days = getValue('Avg Days Outstanding', i);
+
+                const totalRevenue = (getValue('Arrangement Fees', i) || 0) +
+                                   (getValue('Logistic Fees', i) || 0) +
+                                   (getValue('Cargo Insurance Fees', i) || 0) +
+                                   (getValue('Docs Management Fees', i) || 0);
+
+                const totalCosts = (getValue('Logistic Costs', i) || 0) +
+                                 (getValue('Cargo Insurance Costs', i) || 0) +
+                                 (getValue('Cost of Funds (Accrued)', i) || 0) +
+                                 (getValue('Costs of Docs Delivery', i) || 0);
+
+                const netMargin = totalRevenue - totalCosts;
+                const cashDrag = getValue('Cash Drag', i);
+
+                const cashDragClass = cashDrag && cashDrag > 0.30 ? ' highlight-warning' : '';
+
+                rows += `
+                    <tr>
+                        <td>${period}</td>
+                        <td class="number">${gmv ? formatCurrency(gmv) : '-'}</td>
+                        <td class="number">${funded ? formatCurrency(funded) : '-'}</td>
+                        <td class="number">${days ? days.toFixed(0) : '-'}</td>
+                        <td class="number">${formatCurrency(totalRevenue)}</td>
+                        <td class="number">${formatCurrency(totalCosts)}</td>
+                        <td class="number">${formatCurrency(netMargin)}</td>
+                        <td class="number${cashDragClass}">${cashDrag ? formatPercentage(cashDrag) : '-'}</td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = rows;
+        }
+
+        // Fee Profitability Table
+        function renderFeeProfitabilityTable() {
+            const thead = document.getElementById('feeTableHead');
+            const tbody = document.getElementById('feeTableBody');
+
+            thead.innerHTML = `
+                <tr>
+                    <th>Fee Type</th>
+                    <th class="number">Total Revenue</th>
+                    <th class="number">Total Costs</th>
+                    <th class="number">Gross Margin</th>
+                    <th class="number">Margin %</th>
+                </tr>
+            `;
+
+            const feeTypes = [
+                { name: 'Arrangement Fees', revenue: 'Arrangement Fees', cost: null },
+                { name: 'Logistics', revenue: 'Logistic Fees', cost: 'Logistic Costs' },
+                { name: 'Cargo Insurance', revenue: 'Cargo Insurance Fees', cost: 'Cargo Insurance Costs' },
+                { name: 'Document Management', revenue: 'Docs Management Fees', cost: 'Costs of Docs Delivery' },
+                { name: 'Warehouse', revenue: 'Warehouse Destination Fees', cost: 'Warehouse Destination Costs' }
+            ];
+
+            let rows = '';
+            feeTypes.forEach(feeType => {
+                const revenue = sum(feeType.revenue);
+                const costs = feeType.cost ? sum(feeType.cost) : 0;
+                const margin = revenue - costs;
+                const marginPct = revenue > 0 ? (margin / revenue) * 100 : 0;
+
+                rows += `
+                    <tr>
+                        <td>${feeType.name}</td>
+                        <td class="number">${formatCurrency(revenue)}</td>
+                        <td class="number">${formatCurrency(costs)}</td>
+                        <td class="number">${formatCurrency(margin)}</td>
+                        <td class="number">${marginPct.toFixed(1)}%</td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = rows;
+        }
+
+        // Export dashboard to PDF
+        async function exportToPDF() {
+            const exportBtn = document.getElementById('exportBtn');
+            const container = document.querySelector('.container');
+
+            // Disable button and show loading state
+            exportBtn.disabled = true;
+            exportBtn.innerHTML = '<span>⏳</span><span>Generating PDF...</span>';
+
+            try {
+                // Add PDF export mode class
+                container.classList.add('pdf-export-mode');
+
+                // Update PDF header with current filter info
+                const refData = getReferenceData();
+                const pdfDate = document.getElementById('pdfDate');
+                const pdfPeriodInfo = document.getElementById('pdfPeriodInfo');
+
+                const dateStr = new Date().toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                pdfDate.textContent = dateStr;
+
+                // Add filter context to PDF header
+                let filterInfo = `Reference Period: ${refData.label}`;
+                if (viewMode === 'quarterly') {
+                    filterInfo += ' | View: Quarterly';
+                }
+                if (dateRangeStart !== null || dateRangeEnd !== null) {
+                    const startLabel = dateRangeStart !== null ? dashboardData.periods[dateRangeStart] : 'Start';
+                    const endLabel = dateRangeEnd !== null ? dashboardData.periods[dateRangeEnd] : 'End';
+                    filterInfo += ` | Date Range: ${startLabel} to ${endLabel}`;
+                }
+                pdfPeriodInfo.innerHTML = `${filterInfo}<br>Generated on ${dateStr}`;
+
+                // Force re-render all charts with new layout
+                exportBtn.innerHTML = '<span>⏳</span><span>Preparing charts...</span>';
+
+                // Destroy and recreate all charts for clean render
+                Object.values(charts).forEach(chart => {
+                    if (chart && typeof chart.destroy === 'function') {
+                        chart.destroy();
+                    }
+                });
+                charts = {};
+
+                // Render with new layout
+                renderCharts();
+
+                // Wait for charts to fully render
+                await new Promise(resolve => setTimeout(resolve, 2000));
+
+                // Update loading message
+                exportBtn.innerHTML = '<span>⏳</span><span>Generating PDF...</span>';
+
+                // PDF options - optimized for A4 landscape
+                const opt = {
+                    margin: [10, 10, 10, 10],
+                    filename: `Trade_Finance_Dashboard_${refData.label.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`,
+                    image: {
+                        type: 'jpeg',
+                        quality: 0.95
+                    },
+                    html2canvas: {
+                        scale: 2,
+                        useCORS: true,
+                        logging: false,
+                        backgroundColor: '#FFFFFF',
+                        width: 1200,
+                        windowWidth: 1200,
+                        letterRendering: true,
+                        allowTaint: false,
+                        imageTimeout: 0,
+                        removeContainer: false
+                    },
+                    jsPDF: {
+                        unit: 'mm',
+                        format: 'a4',
+                        orientation: 'landscape',
+                        compress: true
+                    },
+                    pagebreak: {
+                        mode: ['avoid-all', 'css', 'legacy'],
+                        before: ['.table-section'],
+                        after: ['.kpi-section']
+                    }
+                };
+
+                // Generate PDF
+                await html2pdf().set(opt).from(container).save();
+
+                // Remove PDF export mode class
+                container.classList.remove('pdf-export-mode');
+
+                // Re-render charts back to normal layout
+                await new Promise(resolve => setTimeout(resolve, 200));
+
+                // Destroy and recreate charts again
+                Object.values(charts).forEach(chart => {
+                    if (chart && typeof chart.destroy === 'function') {
+                        chart.destroy();
+                    }
+                });
+                charts = {};
+                renderCharts();
+
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                alert('Error generating PDF. Please try again.');
+                container.classList.remove('pdf-export-mode');
+
+                // Re-render charts back to normal
+                Object.values(charts).forEach(chart => {
+                    if (chart && typeof chart.destroy === 'function') {
+                        chart.destroy();
+                    }
+                });
+                charts = {};
+                renderCharts();
+            } finally {
+                // Re-enable button
+                exportBtn.disabled = false;
+                exportBtn.innerHTML = '<span>📄</span><span>Export PDF</span>';
+            }
+        }
+
         // Load data on page load
         loadDashboardData();
     </script>

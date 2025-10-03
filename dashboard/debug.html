@@ -38,7 +38,7 @@
 
         async function testFetch() {
             try {
-                const response = await fetch('/data/processed/dashboard_data.json');
+                const response = await fetch('../data/processed/dashboard_data.json');
                 document.getElementById('fetchStatus').innerHTML = `✓ Status: ${response.status} ${response.statusText}`;
                 rawData = await response.json();
                 console.log('Raw data:', rawData);

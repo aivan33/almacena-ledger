@@ -190,7 +190,7 @@
         async function loadValidationData() {
             try {
                 const timestamp = new Date().getTime();
-                const response = await fetch(`/data/processed/dashboard_data.json?t=${timestamp}`);
+                const response = await fetch(`../data/processed/dashboard_data.json?t=${timestamp}`);
                 if (!response.ok) throw new Error('Data file not found');
 
                 const data = await response.json();

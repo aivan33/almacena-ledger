@@ -86,6 +86,10 @@ class KPIPipeline:
             # If that fails, try the original format (M/D/YY)
             if df['month'].isna().all():
                 df['month'] = pd.to_datetime(month_values, format='%m/%d/%y', errors='coerce')
+
+            # If all specific formats fail, try general parsing
+            if df['month'].isna().all():
+                df['month'] = pd.to_datetime(month_values, errors='coerce')
         elif 'month' in df.columns:
             # If already datetime, keep as is
             df['month'] = pd.to_datetime(df['month'], errors='coerce')

@@ -209,12 +209,12 @@ def convert_to_long_format(df):
     return df_long
 
 
-def prepare_dashboard_json(df):
-    """Prepare JSON format for dashboard consumption."""
+def prepare_dashboard_json(df_usd, df_eur):
+    """Prepare JSON format for dashboard consumption with both USD and EUR."""
     from datetime import datetime
 
     # Convert dates to month names
-    date_cols = [col for col in df.columns if col != 'month']
+    date_cols = [col for col in df_usd.columns if col != 'month']
 
     # Convert datetime columns to string format
     formatted_periods = []
@@ -231,28 +231,43 @@ def prepare_dashboard_json(df):
         else:
             formatted_periods.append(str(col))
 
-    # Prepare data structure
+    # Prepare data structure with both currencies
     data = {
-        'metrics': df['month'].tolist(),
+        'metrics': df_usd['month'].tolist(),
         'periods': formatted_periods,
-        'values': {}
+        'values_usd': {},
+        'values_eur': {}
     }
 
-    # Add each metric's values
-    for idx, row in df.iterrows():
+    # Add USD values
+    for idx, row in df_usd.iterrows():
         metric_name = str(row['month'])
         values = []
         for col in date_cols:
             val = row[col]
             if pd.notna(val) and val != '' and val != '<NA>':
-                # Convert to float if possible
                 try:
                     values.append(float(val))
                 except (ValueError, TypeError):
                     values.append(str(val))
             else:
                 values.append(None)
-        data['values'][metric_name] = values
+        data['values_usd'][metric_name] = values
+
+    # Add EUR values
+    for idx, row in df_eur.iterrows():
+        metric_name = str(row['month'])
+        values = []
+        for col in date_cols:
+            val = row[col]
+            if pd.notna(val) and val != '' and val != '<NA>':
+                try:
+                    values.append(float(val))
+                except (ValueError, TypeError):
+                    values.append(str(val))
+            else:
+                values.append(None)
+        data['values_eur'][metric_name] = values
 
     return data
 
@@ -291,18 +306,18 @@ def main(spreadsheet_id=None, sheet_name='dashboard'):
 
         print(f"DataFrame ready: {df.shape[0]} rows x {df.shape[1]} columns")
 
-        # Clean and process
-        df_clean = clean_and_process(df)
+        # Clean and process - this gives us USD values
+        df_usd = clean_and_process(df)
 
         # Convert to EUR
-        df_eur = convert_to_eur(df_clean)
+        df_eur = convert_to_eur(df_usd.copy())
 
-        # Save wide format CSV
+        # Save wide format CSV (EUR version)
         df_eur.to_csv(OUTPUT_CSV, index=False)
         print(f"Saved wide format to: {OUTPUT_CSV}")
 
-        # Prepare and save JSON for dashboard
-        dashboard_data = prepare_dashboard_json(df_eur)
+        # Prepare and save JSON for dashboard with both currencies
+        dashboard_data = prepare_dashboard_json(df_usd, df_eur)
         with open(OUTPUT_JSON, 'w') as f:
             json.dump(dashboard_data, f, indent=2)
         print(f"Saved dashboard JSON to: {OUTPUT_JSON}")
