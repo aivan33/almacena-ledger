@@ -532,6 +532,50 @@
             color: #333333;
         }
 
+        /* Summary View Toggle - Inline with section title */
+        .summary-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .summary-view-toggle {
+            display: flex;
+            gap: 0;
+            background: #FFFFFF;
+            border: 1px solid #CCCCCC;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0px 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .summary-view-btn {
+            padding: 8px 16px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #666666;
+            background: #FFFFFF;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .summary-view-btn:not(:last-child) {
+            border-right: 1px solid #CCCCCC;
+        }
+
+        .summary-view-btn.active {
+            background: #013E3F;
+            color: #FFFFFF;
+        }
+
+        .summary-view-btn:hover:not(.active) {
+            background: #F8F8F8;
+            color: #333333;
+        }
+
         /* Print and PDF export styles */
         @media print {
             .filter-section,
@@ -706,6 +750,14 @@
             .kpi-grid {
                 grid-template-columns: 1fr;
             }
+            .summary-header {
+                flex-direction: column;
+                gap: 16px;
+                align-items: stretch;
+            }
+            .summary-view-toggle {
+                width: 100%;
+            }
             .kpi-section, .charts-section, .table-section {
                 padding: 16px;
             }
@@ -830,7 +882,13 @@
 
         <!-- KPI Cards -->
         <div class="kpi-section">
-            <h2 class="section-title">Executive Summary</h2>
+            <div class="summary-header">
+                <h2 class="section-title" style="margin-bottom: 0;">Executive Summary</h2>
+                <div class="summary-view-toggle">
+                    <button class="summary-view-btn active" data-mode="period" onclick="setSummaryViewMode('period')">Reference Period</button>
+                    <button class="summary-view-btn" data-mode="range" onclick="setSummaryViewMode('range')">Date Range</button>
+                </div>
+            </div>
             <div class="kpi-grid" id="kpiGrid">
                 <!-- KPI cards will be populated by JavaScript -->
             </div>
@@ -941,6 +999,7 @@
         let dateRangeStart = null;
         let dateRangeEnd = null;
         let currency = 'usd'; // 'usd' or 'eur'
+        let summaryViewMode = 'period'; // 'range' or 'period' - controls what data the executive summary uses
 
         // Color palette
         const colors = {
@@ -1109,6 +1168,19 @@
 
             // Re-render all dashboard
             renderAll();
+        }
+
+        // Set summary view mode (range vs period)
+        function setSummaryViewMode(mode) {
+            summaryViewMode = mode;
+
+            // Update button states
+            document.querySelectorAll('.summary-view-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.mode === mode);
+            });
+
+            // Re-render KPIs only
+            renderKPIs();
         }
 
         // Apply date range filters
@@ -1410,13 +1482,45 @@
             }
         }
 
+        // Get summary data based on view mode (range vs period)
+        function getSummaryData() {
+            if (summaryViewMode === 'period') {
+                // Period mode: use only reference period data, ignore date range filters
+                const refData = getReferenceData();
+                const values = getValues();
+                let data = { periods: [], values: {} };
+
+                // Extract data for the reference period range
+                for (let i = refData.startIdx; i <= refData.endIdx; i++) {
+                    data.periods.push(dashboardData.periods[i]);
+                }
+
+                Object.keys(values).forEach(metric => {
+                    data.values[metric] = [];
+                    for (let i = refData.startIdx; i <= refData.endIdx; i++) {
+                        data.values[metric].push(values[metric][i]);
+                    }
+                });
+
+                // Apply quarterly aggregation if needed
+                if (viewMode === 'quarterly') {
+                    data = aggregateQuarterly(data);
+                }
+
+                return data;
+            } else {
+                // Range mode: use date range filters (normal behavior)
+                return getFilteredData();
+            }
+        }
+
         // Render KPI Cards
         function renderKPIs() {
             const kpiGrid = document.getElementById('kpiGrid');
             const refData = getReferenceData();
 
-            // Get filtered data to respect date range selection
-            const filteredData = getFilteredData();
+            // Get data based on summary view mode
+            const filteredData = getSummaryData();
 
             // Calculate KPIs based on filtered data
             const totalGMV = filteredData.values['GMV'].reduce((sum, val) => sum + (val || 0), 0);
@@ -1436,9 +1540,9 @@
             const daysValues = filteredData.values['Avg Days Outstanding'].filter(v => v !== null && v !== undefined && v > 0);
             const avgDaysOutstanding = daysValues.reduce((sum, val) => sum + val, 0) / (daysValues.length || 1);
 
-            // Get previous cash drag for comparison (only for single month view without date range filter)
+            // Get previous cash drag for comparison (only for single month view in period mode)
             let cashDragChange = null;
-            if (refData.type === 'month' && refData.endIdx > 0 && dateRangeStart === null && dateRangeEnd === null && cashDragValues.length === 1) {
+            if (summaryViewMode === 'period' && refData.type === 'month' && refData.endIdx > 0 && cashDragValues.length === 1) {
                 // Find the previous month with data
                 const values = getValues();
                 let prevIdx = refData.endIdx - 1;
@@ -1465,15 +1569,20 @@
             else if (avgDaysOutstanding >= 20 && avgDaysOutstanding <= 25) daysClass = 'good';
             else daysClass = 'warning';
 
-            // Determine period description based on filters
+            // Determine period description based on summary view mode and filters
             let periodDesc;
-            if (dateRangeStart !== null || dateRangeEnd !== null) {
-                // Date range is active - show the range
-                const startLabel = dateRangeStart !== null ? dashboardData.periods[dateRangeStart] : filteredData.periods[0];
-                const endLabel = dateRangeEnd !== null ? dashboardData.periods[dateRangeEnd] : filteredData.periods[filteredData.periods.length - 1];
-                periodDesc = `(${startLabel} → ${endLabel})`;
-            } else {
+            if (summaryViewMode === 'period') {
+                // Period mode: show reference period
                 periodDesc = refData.type === 'month' ? `for ${refData.label}` : `(${refData.label})`;
+            } else {
+                // Range mode: show date range
+                if (dateRangeStart !== null || dateRangeEnd !== null) {
+                    const startLabel = dateRangeStart !== null ? dashboardData.periods[dateRangeStart] : filteredData.periods[0];
+                    const endLabel = dateRangeEnd !== null ? dashboardData.periods[dateRangeEnd] : filteredData.periods[filteredData.periods.length - 1];
+                    periodDesc = `(${startLabel} → ${endLabel})`;
+                } else {
+                    periodDesc = `(all periods)`;
+                }
             }
 
             kpiGrid.innerHTML = `
