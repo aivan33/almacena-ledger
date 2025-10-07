@@ -1,5 +1,9 @@
 """
 Fetch KPI data from Google Sheets and save to local files for dashboard consumption.
+
+Environment Variables:
+    GOOGLE_CREDENTIALS_FILE: Path to Google service account JSON file
+                            (default: credentials/service-account.json)
 """
 import os
 import json
@@ -7,8 +11,11 @@ import pandas as pd
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
-# Configuration
-CREDENTIALS_FILE = 'credentials/genuine-ridge-473708-b9-1004a2f89ab7.json'
+# Configuration - use environment variables with fallback
+CREDENTIALS_FILE = os.getenv(
+    'GOOGLE_CREDENTIALS_FILE',
+    'credentials/service-account.json'
+)
 SPREADSHEET_ID = None  # Will be extracted from URL or provided
 SHEET_NAME = 'dashboard'  # The sheet name to read from
 SCOPES = [
@@ -23,6 +30,14 @@ OUTPUT_JSON = 'data/processed/dashboard_data.json'
 
 def get_credentials():
     """Get credentials for Google API."""
+    if not os.path.exists(CREDENTIALS_FILE):
+        raise FileNotFoundError(
+            f"Credentials file not found: {CREDENTIALS_FILE}\n"
+            f"Please set GOOGLE_CREDENTIALS_FILE environment variable or place "
+            f"credentials at {CREDENTIALS_FILE}\n"
+            f"See README.md for setup instructions."
+        )
+
     creds = service_account.Credentials.from_service_account_file(
         CREDENTIALS_FILE, scopes=SCOPES)
     return creds

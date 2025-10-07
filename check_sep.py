@@ -23,20 +23,21 @@ print()
 # Let's check what the actual USD value in the sheet is
 print("Let me check what's actually downloaded from Google Sheets...")
 
+import os
 import pandas as pd
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 import io
 from googleapiclient.http import MediaIoBaseDownload
 
-CREDENTIALS_FILE = 'credentials/genuine-ridge-473708-b9-1004a2f89ab7.json'
+CREDENTIALS_FILE = os.getenv('GOOGLE_CREDENTIALS_FILE', 'credentials/service-account.json')
 SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
 
 creds = service_account.Credentials.from_service_account_file(CREDENTIALS_FILE, scopes=SCOPES)
 drive_service = build('drive', 'v3', credentials=creds)
 
-# Download file
-request = drive_service.files().get_media(fileId='1PV11033oLV8OwRZY4hG9ils9IXk2qstu')
+# Download file - REPLACE WITH YOUR FILE ID
+request = drive_service.files().get_media(fileId='YOUR_FILE_ID_HERE')
 file_buffer = io.BytesIO()
 downloader = MediaIoBaseDownload(file_buffer, request)
 

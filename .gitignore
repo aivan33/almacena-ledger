@@ -30,6 +30,12 @@ wheels/
 *.swo
 *~
 
+# Backup files
+*.bak
+*.backup
+*.old
+*.orig
+
 # Data files (keep structure but ignore actual data)
 data/raw/*.xlsx
 data/raw/*.csv
@@ -37,6 +43,10 @@ data/processed/**/*.csv
 data/processed/**/*.xlsx
 outputs/**/*.csv
 outputs/**/*.xlsx
+
+# PDF files (may contain sensitive financial documents)
+*.pdf
+**/*.pdf
 
 # Keep directory structure
 !data/raw/.gitkeep
@@ -54,6 +64,21 @@ Thumbs.db
 .env
 .env.local
 
-# Credentials
+# Credentials & Sensitive
 credentials/
+tokens.json
 *.json
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+~$*
+
+# Package archives
+*.zip
+*.tar.gz
+*.rar
