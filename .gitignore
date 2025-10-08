@@ -82,3 +82,6 @@ logs/
 *.zip
 *.tar.gz
 *.rar
+
+# Build outputs
+dashboard-package/
