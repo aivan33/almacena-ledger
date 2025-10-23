@@ -100,19 +100,26 @@
         }
 
         .kpi-change {
-            font-size: 12px;
+            font-size: 13px;
             margin-top: 8px;
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 6px;
+            font-weight: 500;
         }
 
         .kpi-change.positive {
-            color: #4CAF50;
+            color: #00A896;
         }
 
         .kpi-change.negative {
-            color: #F44336;
+            color: #F4845F;
+        }
+
+        .kpi-change-arrow {
+            font-size: 16px;
+            font-weight: bold;
+            line-height: 1;
         }
 
         .kpi-description {
@@ -885,8 +892,8 @@
             <div class="summary-header">
                 <h2 class="section-title" style="margin-bottom: 0;">Executive Summary</h2>
                 <div class="summary-view-toggle">
-                    <button class="summary-view-btn active" data-mode="period" onclick="setSummaryViewMode('period')">Reference Period</button>
-                    <button class="summary-view-btn" data-mode="range" onclick="setSummaryViewMode('range')">Date Range</button>
+                    <button class="summary-view-btn active" data-mode="period" onclick="setSummaryViewMode('period')">Single Period</button>
+                    <button class="summary-view-btn" data-mode="range" onclick="setSummaryViewMode('range')">Cumulative Range</button>
                 </div>
             </div>
             <div class="kpi-grid" id="kpiGrid">
@@ -1540,19 +1547,63 @@
             const daysValues = filteredData.values['Avg Days Outstanding'].filter(v => v !== null && v !== undefined && v > 0);
             const avgDaysOutstanding = daysValues.reduce((sum, val) => sum + val, 0) / (daysValues.length || 1);
 
-            // Get previous cash drag for comparison (only for single month view in period mode)
-            let cashDragChange = null;
-            if (summaryViewMode === 'period' && refData.type === 'month' && refData.endIdx > 0 && cashDragValues.length === 1) {
-                // Find the previous month with data
+            // Calculate month-over-month changes (only for single month view in period mode)
+            let gmvChange = null, fundedChange = null, cashDragChange = null;
+            let portfolioChange = null, invoicesChange = null, daysChange = null;
+
+            if (summaryViewMode === 'period' && refData.type === 'month' && refData.endIdx > 0) {
                 const values = getValues();
+
+                // Find the previous month with data
                 let prevIdx = refData.endIdx - 1;
-                while (prevIdx >= 0 && values['Cash Drag'][prevIdx] === null) {
+                while (prevIdx >= 0 && (
+                    values['GMV'][prevIdx] === null &&
+                    values['Funded Amount'][prevIdx] === null
+                )) {
                     prevIdx--;
                 }
+
                 if (prevIdx >= 0) {
+                    // GMV change
+                    const currentGMV = values['GMV'][refData.endIdx];
+                    const prevGMV = values['GMV'][prevIdx];
+                    if (currentGMV && prevGMV) {
+                        gmvChange = ((currentGMV - prevGMV) / prevGMV) * 100;
+                    }
+
+                    // Funded amount change
+                    const currentFunded = values['Funded Amount'][refData.endIdx];
+                    const prevFunded = values['Funded Amount'][prevIdx];
+                    if (currentFunded && prevFunded) {
+                        fundedChange = ((currentFunded - prevFunded) / prevFunded) * 100;
+                    }
+
+                    // Cash drag change (lower is better, so invert the logic)
+                    const currentCashDrag = values['Cash Drag'][refData.endIdx];
                     const prevCashDrag = values['Cash Drag'][prevIdx];
-                    if (prevCashDrag !== null) {
-                        cashDragChange = ((cashDrag - prevCashDrag) / prevCashDrag) * 100;
+                    if (currentCashDrag !== null && prevCashDrag !== null) {
+                        cashDragChange = ((currentCashDrag - prevCashDrag) / prevCashDrag) * 100;
+                    }
+
+                    // Portfolio change
+                    const currentPortfolio = values['Avg Portfolio Outstanding'][refData.endIdx];
+                    const prevPortfolio = values['Avg Portfolio Outstanding'][prevIdx];
+                    if (currentPortfolio && prevPortfolio) {
+                        portfolioChange = ((currentPortfolio - prevPortfolio) / prevPortfolio) * 100;
+                    }
+
+                    // Invoices change
+                    const currentInvoices = values['# Invoices'][refData.endIdx];
+                    const prevInvoices = values['# Invoices'][prevIdx];
+                    if (currentInvoices && prevInvoices) {
+                        invoicesChange = ((currentInvoices - prevInvoices) / prevInvoices) * 100;
+                    }
+
+                    // Days outstanding change (lower is better, so invert the logic)
+                    const currentDays = values['Avg Days Outstanding'][refData.endIdx];
+                    const prevDays = values['Avg Days Outstanding'][prevIdx];
+                    if (currentDays && prevDays && currentDays > 0 && prevDays > 0) {
+                        daysChange = ((currentDays - prevDays) / prevDays) * 100;
                     }
                 }
             }
@@ -1585,38 +1636,55 @@
                 }
             }
 
+            // Helper function to format change indicator
+            const formatChange = (change, invertLogic = false) => {
+                if (change === null || change === undefined) return '';
+
+                // For metrics where lower is better (cash drag, days outstanding), invert the coloring
+                const isPositive = invertLogic ? (change < 0) : (change > 0);
+                const arrowSymbol = change > 0 ? '↗' : '↘';
+
+                return `<div class="kpi-change ${isPositive ? 'positive' : 'negative'}">
+                    <span class="kpi-change-arrow">${arrowSymbol}</span>
+                    <span>${Math.abs(change).toFixed(1)}% vs last month</span>
+                </div>`;
+            };
+
             kpiGrid.innerHTML = `
                 <div class="kpi-card">
                     <div class="kpi-label">Total GMV ${periodDesc}</div>
                     <div class="kpi-value">${formatCurrencyM(totalGMV)}</div>
+                    ${formatChange(gmvChange)}
                     <div class="kpi-description">Gross Merchandise Value</div>
                 </div>
                 <div class="kpi-card">
                     <div class="kpi-label">Total Funded ${periodDesc}</div>
                     <div class="kpi-value">${formatCurrencyM(totalFunded)}</div>
+                    ${formatChange(fundedChange)}
                     <div class="kpi-description">Amount funded to clients</div>
                 </div>
                 <div class="kpi-card ${cashDragClass}">
                     <div class="kpi-label">${(filteredData.periods.length > 1 || refData.type !== 'month') ? 'Avg Cash Drag' : 'Cash Drag'} ${periodDesc}</div>
                     <div class="kpi-value">${formatPercentage(cashDrag)}</div>
-                    ${cashDragChange ? `<div class="kpi-change ${cashDragChange > 0 ? 'negative' : 'positive'}">
-                        ${cashDragChange > 0 ? '↑' : '↓'} ${Math.abs(cashDragChange).toFixed(1)}% vs previous
-                    </div>` : ''}
+                    ${formatChange(cashDragChange, true)}
                     <div class="kpi-description">Idle capital - lower is better</div>
                 </div>
                 <div class="kpi-card">
                     <div class="kpi-label">Avg Portfolio ${periodDesc}</div>
                     <div class="kpi-value">${formatCurrencyM(avgPortfolio)}</div>
+                    ${formatChange(portfolioChange)}
                     <div class="kpi-description">Capital deployed in portfolio</div>
                 </div>
                 <div class="kpi-card">
                     <div class="kpi-label">Total Invoices ${periodDesc}</div>
                     <div class="kpi-value">${formatNumber(totalInvoices)}</div>
+                    ${formatChange(invoicesChange)}
                     <div class="kpi-description">Number of invoices processed</div>
                 </div>
                 <div class="kpi-card ${daysClass}">
                     <div class="kpi-label">Avg Days Out ${periodDesc}</div>
                     <div class="kpi-value">${avgDaysOutstanding.toFixed(0)} days</div>
+                    ${formatChange(daysChange, true)}
                     <div class="kpi-description">Average collection period</div>
                 </div>
             `;
@@ -1920,6 +1988,17 @@
 
             const filteredData = getFilteredData();
 
+            // Calculate max value for y1 axis (percentage axis)
+            const cashDragPct = filteredData.values['Cash Drag'].map(v => v ? v * 100 : null);
+            const gmvInsuredPct = filteredData.values['% GMV Insured'].map(v => v ? v * 100 : null);
+
+            const maxCashDrag = Math.max(...cashDragPct.filter(v => v !== null));
+            const maxGmvInsured = Math.max(...gmvInsuredPct.filter(v => v !== null));
+            const maxPercentageValue = Math.max(maxCashDrag, maxGmvInsured);
+
+            // Add 15 percentage points padding above the highest value
+            const y1Max = maxPercentageValue + 15;
+
             charts.portfolioHealth = new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -1937,7 +2016,7 @@
                         },
                         {
                             label: 'Cash Drag %',
-                            data: filteredData.values['Cash Drag'].map(v => v ? v * 100 : null),
+                            data: cashDragPct,
                             borderColor: colors.warning,
                             backgroundColor: colors.warning + '20',
                             yAxisID: 'y1',
@@ -1947,7 +2026,7 @@
                         },
                         {
                             label: '% GMV Insured',
-                            data: filteredData.values['% GMV Insured'].map(v => v ? v * 100 : null),
+                            data: gmvInsuredPct,
                             borderColor: colors.success,
                             backgroundColor: colors.success + '40',
                             yAxisID: 'y1',
@@ -1968,19 +2047,71 @@
                                 const value = context.dataset.data[context.dataIndex];
                                 if (!value) return false;
 
-                                // Only show labels for the bar chart (% GMV Insured)
-                                if (context.datasetIndex !== 2) return false;
-
-                                // Hide if value is less than 5%
-                                return value >= 5;
+                                // Show labels for all datasets
+                                return true;
                             },
-                            color: '#FFFFFF',
+                            color: context => {
+                                // White for bar chart, dark for line charts
+                                return context.datasetIndex === 2 ? '#FFFFFF' : '#222222';
+                            },
+                            align: context => {
+                                const value = context.dataset.data[context.dataIndex];
+
+                                // Days Outstanding (dataset 0): dynamic based on value
+                                if (context.datasetIndex === 0) {
+                                    return value < 20 ? 'top' : 'bottom';
+                                }
+
+                                // Cash Drag % (dataset 1): always above
+                                if (context.datasetIndex === 1) {
+                                    return 'top';
+                                }
+
+                                // % GMV Insured (bar, dataset 2): top if value too low (< 15%), otherwise bottom
+                                if (context.datasetIndex === 2) {
+                                    return value < 15 ? 'top' : 'bottom';
+                                }
+
+                                return 'bottom';
+                            },
+                            anchor: context => {
+                                const value = context.dataset.data[context.dataIndex];
+
+                                // Days Outstanding and Cash Drag: anchor to the point
+                                if (context.datasetIndex === 0) {
+                                    return value < 20 ? 'end' : 'start';
+                                }
+
+                                if (context.datasetIndex === 1) {
+                                    return 'end';
+                                }
+
+                                // % GMV Insured (bar): top if low value, otherwise bottom edge
+                                if (context.datasetIndex === 2) {
+                                    return value < 15 ? 'end' : 'end';
+                                }
+
+                                return 'end';
+                            },
+                            backgroundColor: context => {
+                                // Background for line charts, transparent for bar
+                                return context.datasetIndex === 2 ? 'transparent' : 'rgba(255, 255, 255, 0.8)';
+                            },
+                            borderRadius: 4,
+                            padding: 4,
                             font: {
                                 size: 10,
                                 weight: 600
                             },
-                            formatter: value => {
+                            formatter: (value, context) => {
                                 if (!value) return '';
+
+                                // Days Outstanding (dataset 0): show as integer
+                                if (context.datasetIndex === 0) {
+                                    return Math.round(value) + 'd';
+                                }
+
+                                // Cash Drag % and % GMV Insured: show as percentage
                                 return value.toFixed(0) + '%';
                             }
                         }
@@ -1995,7 +2126,8 @@
                             type: 'linear',
                             position: 'right',
                             title: { display: true, text: 'Percentage (%)' },
-                            grid: { drawOnChartArea: false }
+                            grid: { drawOnChartArea: false },
+                            suggestedMax: y1Max
                         }
                     }
                 }
