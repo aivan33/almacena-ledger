@@ -7,6 +7,8 @@ An interactive financial dashboard with dual-currency support (USD/EUR) for trac
 - 📊 **Interactive Dashboard**: Beautiful HTML-based dashboard with charts and KPI cards
 - 💱 **Dual-Currency Support**: View data in both USD (original) and EUR (converted using ECB rates)
 - 🔄 **Google Sheets/Drive Integration**: Fetch data directly from Google Sheets or Excel files in Drive
+- 🤖 **Automated Updates**: n8n automation for weekly scheduled updates (see [AUTOMATION.md](AUTOMATION.md))
+- ⚡ **Instant Refresh**: One-click data refresh button (no hard refresh needed)
 - 📦 **Standalone Packaging**: Create shareable dashboard packages (no installation required)
 - 📈 **Multiple Views**: Main dashboard, analysis view, data validation, and debug modes
 - 🎨 **Period Comparison**: Analyze trends across multiple time periods
@@ -41,7 +43,32 @@ xdg-open dashboard/index.html  # Linux
 
 See [examples/README.md](examples/README.md) for complete sample data documentation.
 
-## Usage
+## Automated Updates (Recommended)
+
+Set up automated weekly updates using n8n and Docker:
+
+```bash
+# 1. Start n8n with Docker
+docker-compose up -d
+
+# 2. Start webhook server (separate terminal)
+python webhook_server.py
+
+# 3. Import workflow to n8n
+# Open http://localhost:5678 and import n8n_workflow_simple.json
+```
+
+**Result:** Dashboard updates automatically every Monday at 9 AM, with manual trigger option.
+
+**Features:**
+- ⏰ Scheduled updates (configurable)
+- 🖱️ Manual trigger on-demand
+- 🔄 Dashboard refresh button for instant updates
+- 📊 Execution history and monitoring
+
+See [AUTOMATION.md](AUTOMATION.md) for complete setup guide.
+
+## Manual Usage
 
 ### Option 1: Fetch Data from Google Sheets/Drive
 
@@ -135,6 +162,30 @@ export GOOGLE_CREDENTIALS_FILE="/path/to/your-credentials.json"
 - **Google Drive**: Right-click file > "Get link" > Copy ID
 
 **Security Note**: Credentials are automatically excluded from git via `.gitignore`. Never commit credentials!
+
+## Dashboard Features
+
+### Instant Data Refresh
+
+The dashboard includes a **🔄 Refresh Data** button that reloads data without page refresh:
+
+1. Update data in Google Sheets
+2. Run workflow in n8n (or trigger manually)
+3. Click **🔄 Refresh Data** button in dashboard
+4. See updated data immediately!
+
+**No hard refresh needed** - the dashboard includes three layers of cache prevention:
+- HTTP cache-control headers
+- Timestamp-based data loading
+- Manual refresh button with visual feedback
+
+### Cache Prevention
+
+All dashboard HTML files prevent browser caching to ensure you always see the latest data:
+- `index.html` - Main dashboard with refresh button
+- `analysis.html` - Advanced analytics
+- `data-validation.html` - Data quality checks
+- `debug.html` - Debug and testing tools
 
 ## Building Standalone Dashboard Package
 

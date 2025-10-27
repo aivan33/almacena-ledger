@@ -284,15 +284,57 @@ def prepare_dashboard_json(df_usd, df_eur):
                 values.append(None)
         data['values_eur'][metric_name] = values
 
+    # Apply filtering from config if available
+    config = load_config()
+    if config and 'data_settings' in config:
+        exclude_periods = config['data_settings'].get('exclude_periods', [])
+        if exclude_periods:
+            # Filter out excluded periods
+            filtered_periods = []
+            filtered_indices = []
+            for i, period in enumerate(data['periods']):
+                if period not in exclude_periods:
+                    filtered_periods.append(period)
+                    filtered_indices.append(i)
+
+            # Update periods
+            data['periods'] = filtered_periods
+
+            # Filter values for each metric
+            for metric in data['metrics']:
+                if metric in data['values_usd']:
+                    data['values_usd'][metric] = [data['values_usd'][metric][i] for i in filtered_indices]
+                if metric in data['values_eur']:
+                    data['values_eur'][metric] = [data['values_eur'][metric][i] for i in filtered_indices]
+
+            print(f"Filtered out periods: {', '.join(exclude_periods)}")
+
     return data
+
+
+def load_config():
+    """Load configuration from config.json."""
+    config_path = 'config.json'
+    if os.path.exists(config_path):
+        with open(config_path, 'r') as f:
+            return json.load(f)
+    return None
 
 
 def main(spreadsheet_id=None, sheet_name='dashboard'):
     """Main execution function."""
+    # Try to load config if no spreadsheet_id provided
     if not spreadsheet_id:
-        print("Please provide a Google Sheets ID")
-        print("Usage: python scripts/fetch_from_sheets.py <spreadsheet_id>")
-        return
+        config = load_config()
+        if config and config.get('google_drive_file_id') and config['google_drive_file_id'] != 'YOUR_FILE_ID_HERE':
+            spreadsheet_id = config['google_drive_file_id']
+            sheet_name = config.get('sheet_name', sheet_name)
+            print(f"Using file ID from config.json: {spreadsheet_id}")
+        else:
+            print("Please provide a Google Sheets ID or configure config.json")
+            print("Usage: python scripts/fetch_from_sheets.py <spreadsheet_id>")
+            print("\nAlternatively, update the 'google_drive_file_id' in config.json")
+            return
 
     print(f"Fetching data from Google...")
     print(f"File ID: {spreadsheet_id}")
@@ -353,6 +395,5 @@ if __name__ == '__main__':
         sheet_name = sys.argv[2] if len(sys.argv) > 2 else 'dashboard'
         main(spreadsheet_id, sheet_name)
     else:
-        print("Usage: python scripts/fetch_from_sheets.py <spreadsheet_id> [sheet_name]")
-        print("\nExample:")
-        print("  python scripts/fetch_from_sheets.py 1ABC123xyz dashboard")
+        # Try to use config.json
+        main()
