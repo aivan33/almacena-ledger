@@ -16,3 +16,9 @@ google-auth-httplib2>=0.1.1
 
 # Webhook automation (optional - only needed for n8n automation)
 flask>=3.0.0
+
+# Testing dependencies
+pytest>=7.4.0
+pytest-cov>=4.1.0
+pytest-mock>=3.11.1
+pytest-env>=0.8.2

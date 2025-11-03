@@ -77,6 +77,13 @@ tokens.json
 *.log
 logs/
 
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+*.cover
+
 # Temporary files
 *.tmp
 *.temp
