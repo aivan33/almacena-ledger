@@ -7,7 +7,7 @@ Reads data from CSV files (later can be switched to Google Sheets)
 import pandas as pd
 import json
 from datetime import datetime
-from typing import Dict, Any
+from typing import Dict, Any, Optional, Union
 import numpy as np
 from pathlib import Path
 from scripts.logger_config import get_logger
@@ -17,23 +17,31 @@ logger = get_logger(__name__)
 
 class KPIPipeline:
     """Pipeline for processing KPI data from CSV/Google Sheets"""
-    
-    def __init__(self, data_source='csv'):
+
+    def __init__(self, data_source: str = 'csv') -> None:
         """
-        Initialize pipeline
+        Initialize pipeline.
+
         Args:
             data_source: 'csv' for local files, 'google_sheets' for online
         """
-        self.data_source = data_source
-        self.raw_data = None
-        self.transformed_data = None
+        self.data_source: str = data_source
+        self.raw_data: Optional[pd.DataFrame] = None
+        self.transformed_data: Optional[pd.DataFrame] = None
         
-    def load_data(self, file_path='data/raw/kpi_data.csv', sheet_name=None):
+    def load_data(self, file_path: str = 'data/raw/kpi_data.csv', sheet_name: Optional[str] = None) -> Optional[pd.DataFrame]:
         """
-        Load data from CSV or Google Sheets
+        Load data from CSV or Google Sheets.
+
         Args:
             file_path: Path to CSV file (for CSV mode)
             sheet_name: Google Sheet name (for Google Sheets mode)
+
+        Returns:
+            Optional[pd.DataFrame]: Loaded DataFrame or None if Google Sheets not implemented
+
+        Raises:
+            FileNotFoundError: If CSV file not found
         """
         if self.data_source == 'csv':
             if not Path(file_path).exists():
@@ -53,8 +61,16 @@ class KPIPipeline:
         
         return self.raw_data
     
-    def clean_data(self):
-        """Clean and standardize the data"""
+    def clean_data(self) -> pd.DataFrame:
+        """
+        Clean and standardize the data.
+
+        Returns:
+            pd.DataFrame: Cleaned DataFrame with standardized column names and types
+
+        Raises:
+            ValueError: If no data has been loaded
+        """
         if self.raw_data is None:
             raise ValueError("No data loaded. Run load_data first.")
         
@@ -119,7 +135,15 @@ class KPIPipeline:
         return df
     
     def calculate_metrics(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Calculate derived metrics and KPIs"""
+        """
+        Calculate derived metrics and KPIs.
+
+        Args:
+            df: Cleaned DataFrame
+
+        Returns:
+            pd.DataFrame: DataFrame with additional calculated metrics
+        """
         # Operational efficiency
         df['boxes_per_invoice'] = (df['num_boxes'] / df['num_invoices']).round(2)
         
@@ -149,16 +173,29 @@ class KPIPipeline:
         logger.info(f"Calculated {len(df.columns) - 6} derived metrics")
         return df
     
-    def transform_data(self):
-        """Main transformation pipeline"""
+    def transform_data(self) -> pd.DataFrame:
+        """
+        Main transformation pipeline.
+
+        Returns:
+            pd.DataFrame: Fully transformed and enriched DataFrame
+        """
         df_clean = self.clean_data()
         df_with_metrics = self.calculate_metrics(df_clean)
         self.transformed_data = df_with_metrics
         logger.info("Data transformation complete")
         return self.transformed_data
-    
+
     def generate_summary_stats(self) -> Dict[str, Any]:
-        """Generate summary statistics"""
+        """
+        Generate summary statistics.
+
+        Returns:
+            Dict[str, Any]: Dictionary containing summary statistics
+
+        Raises:
+            ValueError: If no transformed data is available
+        """
         if self.transformed_data is None:
             raise ValueError("No transformed data available.")
         
@@ -184,8 +221,19 @@ class KPIPipeline:
         
         return summary
     
-    def export_for_dashboard(self, output_dir='data/processed'):
-        """Export data for dashboard consumption"""
+    def export_for_dashboard(self, output_dir: str = 'data/processed') -> Union[str, Path]:
+        """
+        Export data for dashboard consumption.
+
+        Args:
+            output_dir: Directory to save output files
+
+        Returns:
+            Union[str, Path]: Path to the exported JSON file
+
+        Raises:
+            ValueError: If no transformed data is available
+        """
         if self.transformed_data is None:
             raise ValueError("No transformed data available.")
         
@@ -216,8 +264,19 @@ class KPIPipeline:
 
         return output_path
     
-    def run_pipeline(self, input_file='data/raw/kpi_data.csv'):
-        """Run the complete pipeline"""
+    def run_pipeline(self, input_file: str = 'data/raw/kpi_data.csv') -> Union[str, Path]:
+        """
+        Run the complete pipeline.
+
+        Args:
+            input_file: Path to input CSV file
+
+        Returns:
+            Union[str, Path]: Path to the exported dashboard JSON file
+
+        Raises:
+            Exception: If any step of the pipeline fails
+        """
         logger.info("=" * 50)
         logger.info("Starting KPI Data Pipeline")
         logger.info("=" * 50)

@@ -10,6 +10,7 @@ Environment Variables:
 import os
 import json
 import pandas as pd
+from typing import List, Dict, Any, Optional, Union
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from dotenv import load_dotenv
@@ -38,8 +39,16 @@ OUTPUT_CSV = 'data/processed/kpis_v2_pipeline.csv'
 OUTPUT_JSON = 'data/processed/dashboard_data.json'
 
 
-def get_credentials():
-    """Get credentials for Google API."""
+def get_credentials() -> service_account.Credentials:
+    """
+    Get credentials for Google API.
+
+    Returns:
+        service_account.Credentials: Google service account credentials
+
+    Raises:
+        FileNotFoundError: If credentials file is not found
+    """
     if not os.path.exists(CREDENTIALS_FILE):
         logger.error(f"Credentials file not found: {CREDENTIALS_FILE}")
         logger.error("Please set GOOGLE_CREDENTIALS_FILE environment variable or place "
@@ -59,22 +68,43 @@ def get_credentials():
     return creds
 
 
-def get_sheets_service():
-    """Initialize and return Google Sheets API service."""
+def get_sheets_service() -> Any:
+    """
+    Initialize and return Google Sheets API service.
+
+    Returns:
+        Any: Google Sheets API service resource
+    """
     creds = get_credentials()
     service = build('sheets', 'v4', credentials=creds)
     return service
 
 
-def get_drive_service():
-    """Initialize and return Google Drive API service."""
+def get_drive_service() -> Any:
+    """
+    Initialize and return Google Drive API service.
+
+    Returns:
+        Any: Google Drive API service resource
+    """
     creds = get_credentials()
     service = build('drive', 'v3', credentials=creds)
     return service
 
 
-def download_excel_from_drive(file_id):
-    """Download Excel file from Google Drive and read it."""
+def download_excel_from_drive(file_id: str) -> Dict[str, pd.DataFrame]:
+    """
+    Download Excel file from Google Drive and read it.
+
+    Args:
+        file_id: Google Drive file ID
+
+    Returns:
+        Dict[str, pd.DataFrame]: Dictionary mapping sheet names to DataFrames
+
+    Raises:
+        Exception: If download or parsing fails
+    """
     import io
     from googleapiclient.http import MediaIoBaseDownload
 
@@ -110,8 +140,20 @@ def download_excel_from_drive(file_id):
         raise
 
 
-def fetch_sheet_data(spreadsheet_id, sheet_name='dashboard'):
-    """Fetch data from Google Sheets."""
+def fetch_sheet_data(spreadsheet_id: str, sheet_name: str = 'dashboard') -> List[List[str]]:
+    """
+    Fetch data from Google Sheets.
+
+    Args:
+        spreadsheet_id: Google Sheets spreadsheet ID
+        sheet_name: Name of the sheet to read (default: 'dashboard')
+
+    Returns:
+        List[List[str]]: 2D list of cell values
+
+    Raises:
+        ValueError: If no data found in the sheet
+    """
     logger.info(f"Fetching data from Google Sheets (ID: {spreadsheet_id[:10]}...)")
     service = get_sheets_service()
 
@@ -148,8 +190,16 @@ def fetch_sheet_data(spreadsheet_id, sheet_name='dashboard'):
     return values
 
 
-def convert_to_dataframe(values):
-    """Convert Google Sheets data to pandas DataFrame."""
+def convert_to_dataframe(values: List[List[str]]) -> pd.DataFrame:
+    """
+    Convert Google Sheets data to pandas DataFrame.
+
+    Args:
+        values: 2D list of cell values (first row is headers)
+
+    Returns:
+        pd.DataFrame: DataFrame with first row as column headers
+    """
     # First row is headers
     headers = values[0]
     data_rows = values[1:]
@@ -160,8 +210,18 @@ def convert_to_dataframe(values):
     return df
 
 
-def clean_and_process(df):
-    """Clean and process the dataframe to match expected format."""
+def clean_and_process(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Clean and process the dataframe to match expected format.
+
+    Removes currency symbols ($), commas, percentages (%), and whitespace.
+
+    Args:
+        df: Input DataFrame to clean
+
+    Returns:
+        pd.DataFrame: Cleaned DataFrame
+    """
     # Make a copy to avoid modifying original
     df = df.copy()
 
@@ -180,8 +240,19 @@ def clean_and_process(df):
     return df
 
 
-def convert_to_eur(df):
-    """Convert USD amounts to EUR using the exchange rate row."""
+def convert_to_eur(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Convert USD amounts to EUR using the exchange rate row.
+
+    Looks for a row with 'exch', 'rate', 'eur', or 'usd' in the month column
+    and uses those rates to convert currency metrics.
+
+    Args:
+        df: Input DataFrame with USD values
+
+    Returns:
+        pd.DataFrame: DataFrame with currency values converted to EUR
+    """
     logger.debug("Starting USD to EUR conversion")
     # Make a copy
     df = df.copy()
@@ -232,8 +303,16 @@ def convert_to_eur(df):
     return df
 
 
-def convert_to_long_format(df):
-    """Convert wide format to long format for easier processing."""
+def convert_to_long_format(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Convert wide format to long format for easier processing.
+
+    Args:
+        df: Wide format DataFrame (metrics as rows, periods as columns)
+
+    Returns:
+        pd.DataFrame: Long format DataFrame with date and value columns
+    """
     # Melt the dataframe
     id_vars = ['month']
     value_vars = [col for col in df.columns if col not in id_vars]
@@ -248,8 +327,17 @@ def convert_to_long_format(df):
     return df_long
 
 
-def prepare_dashboard_json(df_usd, df_eur):
-    """Prepare JSON format for dashboard consumption with both USD and EUR."""
+def prepare_dashboard_json(df_usd: pd.DataFrame, df_eur: pd.DataFrame) -> Dict[str, Any]:
+    """
+    Prepare JSON format for dashboard consumption with both USD and EUR.
+
+    Args:
+        df_usd: DataFrame with USD values
+        df_eur: DataFrame with EUR values
+
+    Returns:
+        Dict[str, Any]: Dictionary with metrics, periods, values_usd, values_eur
+    """
     from datetime import datetime
 
     # Convert dates to month names
@@ -336,8 +424,13 @@ def prepare_dashboard_json(df_usd, df_eur):
     return data
 
 
-def load_config():
-    """Load configuration from config.json."""
+def load_config() -> Optional[Dict[str, Any]]:
+    """
+    Load configuration from config.json.
+
+    Returns:
+        Optional[Dict[str, Any]]: Configuration dictionary or None if file not found
+    """
     config_path = 'config.json'
     if os.path.exists(config_path):
         with open(config_path, 'r') as f:
@@ -345,8 +438,20 @@ def load_config():
     return None
 
 
-def main(spreadsheet_id=None, sheet_name='dashboard'):
-    """Main execution function."""
+def main(spreadsheet_id: Optional[str] = None, sheet_name: str = 'dashboard') -> None:
+    """
+    Main execution function.
+
+    Fetches data from Google Sheets/Drive, processes it, converts currencies,
+    and exports to CSV and JSON formats for the dashboard.
+
+    Args:
+        spreadsheet_id: Google Drive file ID or Sheets ID (optional, reads from env/config)
+        sheet_name: Name of the sheet to read (default: 'dashboard')
+
+    Raises:
+        Exception: If data fetching or processing fails
+    """
     logger.info("=" * 60)
     logger.info("Starting Dashboard Data Fetch Process")
     logger.info("=" * 60)

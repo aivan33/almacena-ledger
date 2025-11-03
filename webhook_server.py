@@ -9,7 +9,8 @@ Run:
 
 The server listens on http://localhost:5000/update-dashboard
 """
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, Response
+from typing import Tuple, Dict, Any
 import subprocess
 import os
 import sys
@@ -33,8 +34,13 @@ log.setLevel(logging.WARNING)
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 @app.route('/update-dashboard', methods=['POST', 'GET'])
-def update_dashboard():
-    """Webhook endpoint to trigger dashboard update."""
+def update_dashboard() -> Tuple[Response, int]:
+    """
+    Webhook endpoint to trigger dashboard update.
+
+    Returns:
+        Tuple[Response, int]: JSON response and HTTP status code
+    """
     try:
         logger.info(f"Received {request.method} request to /update-dashboard from {request.remote_addr}")
 
@@ -117,8 +123,13 @@ def update_dashboard():
         }), 500
 
 @app.route('/health', methods=['GET'])
-def health():
-    """Health check endpoint."""
+def health() -> Tuple[Response, int]:
+    """
+    Health check endpoint.
+
+    Returns:
+        Tuple[Response, int]: JSON response with health status and HTTP 200
+    """
     logger.debug("Health check requested")
     return jsonify({'status': 'healthy'}), 200
 
