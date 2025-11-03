@@ -2,6 +2,13 @@
 
 An interactive financial dashboard with dual-currency support (USD/EUR) for tracking KPIs, with data fetching from Google Sheets/Drive and standalone packaging capabilities.
 
+## 🔒 Security First
+
+**This project uses secure credential management.** All sensitive data (API keys, passwords) are stored in environment variables via a `.env` file that is never committed to git.
+
+**👉 New users:** See [SECURITY.md](SECURITY.md) for complete setup instructions.
+**👉 Existing users:** If you have credentials in `config.json`, see the [Migration Guide](SECURITY.md#-migration-guide-existing-users) to secure your setup.
+
 ## Features
 
 - 📊 **Interactive Dashboard**: Beautiful HTML-based dashboard with charts and KPI cards
@@ -116,52 +123,30 @@ python data_pipeline.py
 
 ## Google Sheets/Drive Setup
 
-To fetch data from Google Sheets or Drive, you need Google API credentials:
+To fetch data from Google Sheets or Drive, you need to configure Google API credentials securely.
 
-### 1. Create Google Cloud Project
+**📖 Complete Setup Guide**: See [SECURITY.md](SECURITY.md) for detailed instructions on:
+- Creating Google Cloud project and service account
+- Generating and securing API credentials
+- Setting up environment variables
+- Configuring `.env` file with your credentials
 
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project
-
-### 2. Enable APIs
-
-- Enable **Google Sheets API**
-- Enable **Google Drive API**
-
-### 3. Create Service Account
-
-1. Navigate to "IAM & Admin" > "Service Accounts"
-2. Click "Create Service Account"
-3. Give it a name (e.g., "dashboard-fetcher")
-4. Create and download the JSON key file
-
-### 4. Configure Credentials
+**Quick Setup (TL;DR):**
 
 ```bash
-# Create credentials directory
-mkdir credentials
+# 1. Copy environment template
+cp .env.example .env
 
-# Copy your JSON file
-cp ~/Downloads/your-key.json credentials/service-account.json
+# 2. Edit .env with your credentials
+# Set GOOGLE_CREDENTIALS_FILE and GOOGLE_DRIVE_FILE_ID
 
-# OR use environment variable
-export GOOGLE_CREDENTIALS_FILE="/path/to/your-credentials.json"
+# 3. Place your service account JSON in credentials/ directory
+
+# 4. Test the setup
+python scripts/fetch_from_sheets.py
 ```
 
-### 5. Share Your Google Sheet
-
-- Open your Google Sheet or Drive file
-- Click "Share"
-- Add the service account email (from your JSON file)
-- Grant "Viewer" permissions
-
-### 6. Get File/Sheet ID
-
-- **Google Sheets**: Copy ID from URL
-  - `https://docs.google.com/spreadsheets/d/FILE_ID_HERE/edit`
-- **Google Drive**: Right-click file > "Get link" > Copy ID
-
-**Security Note**: Credentials are automatically excluded from git via `.gitignore`. Never commit credentials!
+**Security Note**: All credentials must be in `.env` file (never in config.json or committed to git)!
 
 ## Dashboard Features
 

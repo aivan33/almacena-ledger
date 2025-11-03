@@ -10,6 +10,10 @@ import json
 import pandas as pd
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Configuration - use environment variables with fallback
 CREDENTIALS_FILE = os.getenv(
@@ -325,16 +329,27 @@ def main(spreadsheet_id=None, sheet_name='dashboard'):
     """Main execution function."""
     # Try to load config if no spreadsheet_id provided
     if not spreadsheet_id:
-        config = load_config()
-        if config and config.get('google_drive_file_id') and config['google_drive_file_id'] != 'YOUR_FILE_ID_HERE':
-            spreadsheet_id = config['google_drive_file_id']
-            sheet_name = config.get('sheet_name', sheet_name)
-            print(f"Using file ID from config.json: {spreadsheet_id}")
+        # Priority 1: Check environment variables (SECURE)
+        spreadsheet_id = os.getenv('GOOGLE_DRIVE_FILE_ID')
+        sheet_name = os.getenv('GOOGLE_SHEET_NAME', sheet_name)
+
+        if spreadsheet_id:
+            print(f"Using file ID from environment variable")
         else:
-            print("Please provide a Google Sheets ID or configure config.json")
-            print("Usage: python scripts/fetch_from_sheets.py <spreadsheet_id>")
-            print("\nAlternatively, update the 'google_drive_file_id' in config.json")
-            return
+            # Priority 2: Fall back to config.json (LEGACY - use .env instead!)
+            config = load_config()
+            if config and config.get('google_drive_file_id') and config['google_drive_file_id'] != 'YOUR_FILE_ID_HERE':
+                spreadsheet_id = config['google_drive_file_id']
+                sheet_name = config.get('sheet_name', sheet_name)
+                print(f"[LEGACY] Using file ID from config.json - Please migrate to .env file")
+            else:
+                print("ERROR: No Google Drive file ID found!")
+                print("\nPlease set credentials in one of these ways:")
+                print("  1. (RECOMMENDED) Set GOOGLE_DRIVE_FILE_ID in .env file")
+                print("  2. Pass as argument: python scripts/fetch_from_sheets.py <file_id>")
+                print("  3. (LEGACY) Update config.json")
+                print("\nSee .env.example for secure setup instructions.")
+                return
 
     print(f"Fetching data from Google...")
     print(f"File ID: {spreadsheet_id}")

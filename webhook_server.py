@@ -13,6 +13,10 @@ from flask import Flask, jsonify, request
 import subprocess
 import os
 import sys
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 app = Flask(__name__)
 
@@ -34,20 +38,28 @@ def update_dashboard():
                 'endpoint': '/update-dashboard'
             }), 200
 
-        # Load config to get credentials path
-        config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config.json')
-        creds_file = 'credentials/service-account.json'  # default
+        # Priority 1: Check environment variable (SECURE)
+        creds_file = os.getenv('GOOGLE_CREDENTIALS_FILE')
 
-        if os.path.exists(config_path):
-            import json
-            with open(config_path, 'r') as f:
-                config = json.load(f)
-                if 'credentials_file' in config:
-                    creds_file = config['credentials_file']
+        if not creds_file:
+            # Priority 2: Fall back to config.json (LEGACY - use .env instead!)
+            config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config.json')
+            creds_file = 'credentials/service-account.json'  # default
+
+            if os.path.exists(config_path):
+                import json
+                with open(config_path, 'r') as f:
+                    config = json.load(f)
+                    if 'credentials_file' in config and config['credentials_file'] != 'credentials/your-service-account.json':
+                        creds_file = config['credentials_file']
 
         # Set environment variable for credentials
         env = os.environ.copy()
         env['GOOGLE_CREDENTIALS_FILE'] = creds_file
+
+        # Pass Google Drive file ID if set
+        if 'GOOGLE_DRIVE_FILE_ID' in os.environ:
+            env['GOOGLE_DRIVE_FILE_ID'] = os.environ['GOOGLE_DRIVE_FILE_ID']
 
         # Run the fetch script
         result = subprocess.run(

@@ -1,0 +1,23 @@
+{
+  "_comment": "SECURITY: Set sensitive values in .env file, not here! See .env.example for setup.",
+  "google_drive_file_id": "YOUR_FILE_ID_HERE",
+  "sheet_name": "dashboard",
+  "credentials_file": "credentials/your-service-account.json",
+  "data_settings": {
+    "include_periods_through": "Sep-25",
+    "exclude_periods": ["Oct-25", "Nov-25", "Dec-25"]
+  },
+  "chart_settings": {
+    "gmv_chart": {
+      "min_value_millions": 5,
+      "buffer_factor": 0.9,
+      "max_value_millions": 17,
+      "top_buffer_millions": 2,
+      "description": "Y-axis: 5M minimum with 10% buffer below, max at 17M or 2M above data (whichever is greater)"
+    },
+    "portfolio_health_chart": {
+      "days_min_value": 10,
+      "description": "Days axis starts at 10, GMV Insured labels at bottom near X-axis"
+    }
+  }
+}

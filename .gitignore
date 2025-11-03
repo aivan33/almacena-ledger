@@ -68,6 +68,10 @@ Thumbs.db
 credentials/
 tokens.json
 *.json
+!config.json
+!package.json
+!n8n_workflow*.json
+!.env.example
 
 # Logs
 *.log
