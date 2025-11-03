@@ -4,6 +4,8 @@ Fetch KPI data from Google Sheets and save to local files for dashboard consumpt
 Environment Variables:
     GOOGLE_CREDENTIALS_FILE: Path to Google service account JSON file
                             (default: credentials/service-account.json)
+    LOG_LEVEL: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+              (default: INFO)
 """
 import os
 import json
@@ -11,9 +13,13 @@ import pandas as pd
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from dotenv import load_dotenv
+from scripts.logger_config import get_logger, log_environment_info
 
 # Load environment variables from .env file
 load_dotenv()
+
+# Initialize logger
+logger = get_logger(__name__)
 
 # Configuration - use environment variables with fallback
 CREDENTIALS_FILE = os.getenv(
@@ -35,6 +41,10 @@ OUTPUT_JSON = 'data/processed/dashboard_data.json'
 def get_credentials():
     """Get credentials for Google API."""
     if not os.path.exists(CREDENTIALS_FILE):
+        logger.error(f"Credentials file not found: {CREDENTIALS_FILE}")
+        logger.error("Please set GOOGLE_CREDENTIALS_FILE environment variable or place "
+                    f"credentials at {CREDENTIALS_FILE}")
+        logger.error("See README.md for setup instructions.")
         raise FileNotFoundError(
             f"Credentials file not found: {CREDENTIALS_FILE}\n"
             f"Please set GOOGLE_CREDENTIALS_FILE environment variable or place "
@@ -42,8 +52,10 @@ def get_credentials():
             f"See README.md for setup instructions."
         )
 
+    logger.debug(f"Loading credentials from: {CREDENTIALS_FILE}")
     creds = service_account.Credentials.from_service_account_file(
         CREDENTIALS_FILE, scopes=SCOPES)
+    logger.info("Successfully loaded Google API credentials")
     return creds
 
 
@@ -67,12 +79,13 @@ def download_excel_from_drive(file_id):
     from googleapiclient.http import MediaIoBaseDownload
 
     try:
+        logger.info(f"Downloading Excel file from Google Drive (ID: {file_id[:10]}...)")
         drive_service = get_drive_service()
 
         # Get file metadata
         file_metadata = drive_service.files().get(fileId=file_id).execute()
-        print(f"File name: {file_metadata.get('name')}")
-        print(f"MIME type: {file_metadata.get('mimeType')}")
+        logger.info(f"File name: {file_metadata.get('name')}")
+        logger.debug(f"MIME type: {file_metadata.get('mimeType')}")
 
         # Download file
         request = drive_service.files().get_media(fileId=file_id)
@@ -82,39 +95,43 @@ def download_excel_from_drive(file_id):
         done = False
         while not done:
             status, done = downloader.next_chunk()
-            print(f"Download progress: {int(status.progress() * 100)}%")
+            logger.debug(f"Download progress: {int(status.progress() * 100)}%")
 
         file_buffer.seek(0)
 
         # Read Excel file
+        logger.info("Parsing Excel file")
         df = pd.read_excel(file_buffer, sheet_name=None)  # Read all sheets
+        logger.info(f"Successfully read {len(df)} sheet(s) from Excel file")
         return df
 
     except Exception as e:
-        print(f"Error downloading from Drive: {e}")
+        logger.error(f"Error downloading from Drive: {e}", exc_info=True)
         raise
 
 
 def fetch_sheet_data(spreadsheet_id, sheet_name='dashboard'):
     """Fetch data from Google Sheets."""
+    logger.info(f"Fetching data from Google Sheets (ID: {spreadsheet_id[:10]}...)")
     service = get_sheets_service()
 
     # First, try to get spreadsheet metadata to see available sheets
     try:
         metadata = service.spreadsheets().get(spreadsheetId=spreadsheet_id).execute()
         sheets = metadata.get('sheets', [])
-        print(f"Available sheets: {[s['properties']['title'] for s in sheets]}")
+        sheet_titles = [s['properties']['title'] for s in sheets]
+        logger.info(f"Available sheets: {sheet_titles}")
 
         # If sheet_name not found, use first sheet
-        sheet_titles = [s['properties']['title'] for s in sheets]
         if sheet_name not in sheet_titles and sheets:
             sheet_name = sheet_titles[0]
-            print(f"Using first sheet: {sheet_name}")
+            logger.warning(f"Requested sheet not found. Using first sheet: {sheet_name}")
     except Exception as e:
-        print(f"Could not get metadata: {e}")
+        logger.warning(f"Could not get metadata: {e}")
         # Continue anyway with provided sheet_name
 
     # Get the data from the sheet
+    logger.debug(f"Reading data from sheet: {sheet_name}")
     sheet = service.spreadsheets()
     result = sheet.values().get(
         spreadsheetId=spreadsheet_id,
@@ -124,8 +141,10 @@ def fetch_sheet_data(spreadsheet_id, sheet_name='dashboard'):
     values = result.get('values', [])
 
     if not values:
+        logger.error('No data found in the sheet')
         raise ValueError('No data found in the sheet')
 
+    logger.info(f"Successfully fetched {len(values)} rows from sheet")
     return values
 
 
@@ -163,6 +182,7 @@ def clean_and_process(df):
 
 def convert_to_eur(df):
     """Convert USD amounts to EUR using the exchange rate row."""
+    logger.debug("Starting USD to EUR conversion")
     # Make a copy
     df = df.copy()
 
@@ -172,11 +192,11 @@ def convert_to_eur(df):
         month_val = str(row['month']).lower()
         if 'exch' in month_val or 'rate' in month_val or 'eur' in month_val or 'usd' in month_val:
             exch_rate_row = row
-            print(f"Found exchange rate row: {row['month']}")
+            logger.info(f"Found exchange rate row: {row['month']}")
             break
 
     if exch_rate_row is None:
-        print("Warning: No exchange rate row found. Skipping currency conversion.")
+        logger.warning("No exchange rate row found. Skipping currency conversion.")
         return df
 
     # Define which metrics should be converted (currency values)
@@ -205,10 +225,10 @@ def convert_to_eur(df):
                         df.at[idx, col] = amount * rate
 
                 except Exception as e:
-                    print(f"Error converting {metric} for period {col}: {e}")
+                    logger.warning(f"Error converting {metric} for period {col}: {e}")
                     continue
 
-    print(f"Converted {len(currency_metrics)} currency metrics to EUR")
+    logger.info(f"Converted {len(currency_metrics)} currency metrics to EUR")
     return df
 
 
@@ -311,7 +331,7 @@ def prepare_dashboard_json(df_usd, df_eur):
                 if metric in data['values_eur']:
                     data['values_eur'][metric] = [data['values_eur'][metric][i] for i in filtered_indices]
 
-            print(f"Filtered out periods: {', '.join(exclude_periods)}")
+            logger.info(f"Filtered out periods: {', '.join(exclude_periods)}")
 
     return data
 
@@ -327,6 +347,10 @@ def load_config():
 
 def main(spreadsheet_id=None, sheet_name='dashboard'):
     """Main execution function."""
+    logger.info("=" * 60)
+    logger.info("Starting Dashboard Data Fetch Process")
+    logger.info("=" * 60)
+
     # Try to load config if no spreadsheet_id provided
     if not spreadsheet_id:
         # Priority 1: Check environment variables (SECURE)
@@ -334,36 +358,36 @@ def main(spreadsheet_id=None, sheet_name='dashboard'):
         sheet_name = os.getenv('GOOGLE_SHEET_NAME', sheet_name)
 
         if spreadsheet_id:
-            print(f"Using file ID from environment variable")
+            logger.info("Using file ID from environment variable")
         else:
             # Priority 2: Fall back to config.json (LEGACY - use .env instead!)
             config = load_config()
             if config and config.get('google_drive_file_id') and config['google_drive_file_id'] != 'YOUR_FILE_ID_HERE':
                 spreadsheet_id = config['google_drive_file_id']
                 sheet_name = config.get('sheet_name', sheet_name)
-                print(f"[LEGACY] Using file ID from config.json - Please migrate to .env file")
+                logger.warning("[LEGACY] Using file ID from config.json - Please migrate to .env file")
             else:
-                print("ERROR: No Google Drive file ID found!")
-                print("\nPlease set credentials in one of these ways:")
-                print("  1. (RECOMMENDED) Set GOOGLE_DRIVE_FILE_ID in .env file")
-                print("  2. Pass as argument: python scripts/fetch_from_sheets.py <file_id>")
-                print("  3. (LEGACY) Update config.json")
-                print("\nSee .env.example for secure setup instructions.")
+                logger.error("No Google Drive file ID found!")
+                logger.error("Please set credentials in one of these ways:")
+                logger.error("  1. (RECOMMENDED) Set GOOGLE_DRIVE_FILE_ID in .env file")
+                logger.error("  2. Pass as argument: python scripts/fetch_from_sheets.py <file_id>")
+                logger.error("  3. (LEGACY) Update config.json")
+                logger.error("See .env.example for secure setup instructions.")
                 return
 
-    print(f"Fetching data from Google...")
-    print(f"File ID: {spreadsheet_id}")
-    print(f"Sheet name: {sheet_name}")
+    logger.info("Fetching data from Google...")
+    logger.info(f"File ID: {spreadsheet_id[:10]}...")
+    logger.info(f"Sheet name: {sheet_name}")
 
     try:
         # Try Google Sheets API first
         try:
-            print("Attempting to read as Google Sheets...")
+            logger.info("Attempting to read as Google Sheets...")
             values = fetch_sheet_data(spreadsheet_id, sheet_name)
-            print(f"Successfully fetched {len(values)} rows")
+            logger.info(f"Successfully fetched {len(values)} rows")
             df = convert_to_dataframe(values)
         except Exception as e:
-            print(f"Not a Google Sheet, trying as Excel file from Drive...")
+            logger.info("Not a Google Sheet, trying as Excel file from Drive...")
             # Try as Excel file from Drive
             excel_data = download_excel_from_drive(spreadsheet_id)
 
@@ -373,32 +397,38 @@ def main(spreadsheet_id=None, sheet_name='dashboard'):
             else:
                 # Use first sheet
                 first_sheet = list(excel_data.keys())[0]
-                print(f"Sheet '{sheet_name}' not found, using: {first_sheet}")
+                logger.warning(f"Sheet '{sheet_name}' not found, using: {first_sheet}")
                 df = excel_data[first_sheet]
 
-        print(f"DataFrame ready: {df.shape[0]} rows x {df.shape[1]} columns")
+        logger.info(f"DataFrame ready: {df.shape[0]} rows x {df.shape[1]} columns")
 
         # Clean and process - this gives us USD values
+        logger.info("Cleaning and processing data...")
         df_usd = clean_and_process(df)
 
         # Convert to EUR
+        logger.info("Converting USD values to EUR...")
         df_eur = convert_to_eur(df_usd.copy())
 
         # Save wide format CSV (EUR version)
+        logger.info(f"Saving wide format CSV to: {OUTPUT_CSV}")
         df_eur.to_csv(OUTPUT_CSV, index=False)
-        print(f"Saved wide format to: {OUTPUT_CSV}")
+        logger.info(f"Successfully saved CSV")
 
         # Prepare and save JSON for dashboard with both currencies
+        logger.info("Preparing dashboard JSON with dual currency support...")
         dashboard_data = prepare_dashboard_json(df_usd, df_eur)
         with open(OUTPUT_JSON, 'w') as f:
             json.dump(dashboard_data, f, indent=2)
-        print(f"Saved dashboard JSON to: {OUTPUT_JSON}")
+        logger.info(f"Successfully saved dashboard JSON to: {OUTPUT_JSON}")
 
-        print("\nData pipeline completed successfully!")
-        print(f"Dashboard is ready to view at: dashboard/index.html")
+        logger.info("=" * 60)
+        logger.info("Data pipeline completed successfully!")
+        logger.info("Dashboard is ready to view at: dashboard/index.html")
+        logger.info("=" * 60)
 
     except Exception as e:
-        print(f"Error: {str(e)}")
+        logger.error(f"Error in data pipeline: {str(e)}", exc_info=True)
         raise
 
 
