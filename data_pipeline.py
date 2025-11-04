@@ -11,6 +11,8 @@ from typing import Dict, Any, Optional, Union
 import numpy as np
 from pathlib import Path
 from scripts.logger_config import get_logger
+from scripts.exceptions import DataProcessingError, ValidationError, ExportError
+from scripts.constants import COLUMN_MAPPINGS, NUMERIC_COLUMNS
 
 # Initialize logger
 logger = get_logger(__name__)
@@ -79,18 +81,8 @@ class KPIPipeline:
         # Remove completely empty rows
         df = df.dropna(how='all')
         
-        # Standardize column names
-        column_mapping = {
-            'GMV': 'gmv',
-            'Funded Amount': 'funded_amount',
-            'Avg Days Outstanding': 'avg_days_outstanding',
-            '# Invoices': 'num_invoices',
-            '# Boxes': 'num_boxes',
-            'month': 'month'
-        }
-        
-        # Rename columns if they exist
-        df.columns = [column_mapping.get(col, col) for col in df.columns]
+        # Standardize column names using constants
+        df.columns = [COLUMN_MAPPINGS.get(col, col) for col in df.columns]
         
         # Convert month to datetime - handle multiple formats
         if 'month' in df.columns and df['month'].dtype == 'object':
@@ -115,16 +107,8 @@ class KPIPipeline:
             # If already datetime, keep as is
             df['month'] = pd.to_datetime(df['month'], errors='coerce')
         
-        # Convert numeric columns - include all potential KPI metrics
-        numeric_cols = [
-            'gmv', 'funded_amount', 'avg_days_outstanding', 'num_invoices', 'num_boxes',
-            'accrued_interests', 'arrangement_fees', 'avg_portfolio_outstanding',
-            'cargo_insurance_costs', 'cargo_insurance_fees', 'cost_of_funds_accrued',
-            'costs_docs_delivery', 'docs_management_fees', 'gmv_insured_pct',
-            'handling_warehouse_costs', 'handling_warehouse_fees', 'logistic_costs',
-            'logistic_fees', 'cash_drag', 'usd_eur_rate_eom'
-        ]
-        for col in numeric_cols:
+        # Convert numeric columns using constants
+        for col in NUMERIC_COLUMNS:
             if col in df.columns:
                 df[col] = pd.to_numeric(df[col], errors='coerce')
         
@@ -307,9 +291,18 @@ class KPIPipeline:
 
             return output_file
 
-        except Exception as e:
+        except (ValidationError, DataProcessingError, ExportError) as e:
             logger.error(f"Pipeline failed: {str(e)}", exc_info=True)
             raise
+        except FileNotFoundError as e:
+            logger.error(f"Input file not found: {str(e)}")
+            raise DataProcessingError(f"Input file not found: {e}") from e
+        except (IOError, OSError) as e:
+            logger.error(f"File I/O error: {str(e)}", exc_info=True)
+            raise DataProcessingError(f"File operation failed: {e}") from e
+        except Exception as e:
+            logger.error(f"Unexpected error in pipeline: {str(e)}", exc_info=True)
+            raise DataProcessingError(f"Pipeline failed with unexpected error: {e}") from e
 
 if __name__ == "__main__":
     # Check for KPIs v2 data first, then fall back to original data

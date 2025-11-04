@@ -13,8 +13,25 @@ import pandas as pd
 from typing import List, Dict, Any, Optional, Union
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
 from dotenv import load_dotenv
 from scripts.logger_config import get_logger, log_environment_info
+from scripts.exceptions import (
+    CredentialsError,
+    DataFetchError,
+    DataProcessingError,
+    ConfigurationError
+)
+from scripts.constants import (
+    GOOGLE_SCOPES,
+    DEFAULT_CREDENTIALS_FILE,
+    DEFAULT_OUTPUT_CSV,
+    DEFAULT_OUTPUT_JSON,
+    DEFAULT_SHEET_NAME,
+    SHEETS_RANGE_TEMPLATE,
+    CURRENCY_METRICS,
+    EXCHANGE_RATE_KEYWORDS
+)
 
 # Load environment variables from .env file
 load_dotenv()
@@ -25,18 +42,15 @@ logger = get_logger(__name__)
 # Configuration - use environment variables with fallback
 CREDENTIALS_FILE = os.getenv(
     'GOOGLE_CREDENTIALS_FILE',
-    'credentials/service-account.json'
+    DEFAULT_CREDENTIALS_FILE
 )
 SPREADSHEET_ID = None  # Will be extracted from URL or provided
-SHEET_NAME = 'dashboard'  # The sheet name to read from
-SCOPES = [
-    'https://www.googleapis.com/auth/spreadsheets.readonly',
-    'https://www.googleapis.com/auth/drive.readonly'
-]
+SHEET_NAME = DEFAULT_SHEET_NAME  # The sheet name to read from
+SCOPES = GOOGLE_SCOPES
 
 # Output paths
-OUTPUT_CSV = 'data/processed/kpis_v2_pipeline.csv'
-OUTPUT_JSON = 'data/processed/dashboard_data.json'
+OUTPUT_CSV = DEFAULT_OUTPUT_CSV
+OUTPUT_JSON = DEFAULT_OUTPUT_JSON
 
 
 def get_credentials() -> service_account.Credentials:
@@ -47,25 +61,28 @@ def get_credentials() -> service_account.Credentials:
         service_account.Credentials: Google service account credentials
 
     Raises:
-        FileNotFoundError: If credentials file is not found
+        CredentialsError: If credentials file is not found or invalid
     """
     if not os.path.exists(CREDENTIALS_FILE):
         logger.error(f"Credentials file not found: {CREDENTIALS_FILE}")
         logger.error("Please set GOOGLE_CREDENTIALS_FILE environment variable or place "
                     f"credentials at {CREDENTIALS_FILE}")
         logger.error("See README.md for setup instructions.")
-        raise FileNotFoundError(
-            f"Credentials file not found: {CREDENTIALS_FILE}\n"
-            f"Please set GOOGLE_CREDENTIALS_FILE environment variable or place "
-            f"credentials at {CREDENTIALS_FILE}\n"
+        raise CredentialsError(
+            f"Credentials file not found: {CREDENTIALS_FILE}. "
+            f"Please set GOOGLE_CREDENTIALS_FILE environment variable. "
             f"See README.md for setup instructions."
         )
 
-    logger.debug(f"Loading credentials from: {CREDENTIALS_FILE}")
-    creds = service_account.Credentials.from_service_account_file(
-        CREDENTIALS_FILE, scopes=SCOPES)
-    logger.info("Successfully loaded Google API credentials")
-    return creds
+    try:
+        logger.debug(f"Loading credentials from: {CREDENTIALS_FILE}")
+        creds = service_account.Credentials.from_service_account_file(
+            CREDENTIALS_FILE, scopes=SCOPES)
+        logger.info("Successfully loaded Google API credentials")
+        return creds
+    except (ValueError, KeyError, json.JSONDecodeError) as e:
+        logger.error(f"Invalid credentials file format: {e}")
+        raise CredentialsError(f"Invalid credentials file: {e}") from e
 
 
 def get_sheets_service() -> Any:
@@ -135,9 +152,15 @@ def download_excel_from_drive(file_id: str) -> Dict[str, pd.DataFrame]:
         logger.info(f"Successfully read {len(df)} sheet(s) from Excel file")
         return df
 
-    except Exception as e:
-        logger.error(f"Error downloading from Drive: {e}", exc_info=True)
-        raise
+    except HttpError as e:
+        logger.error(f"Google Drive API error: {e}", exc_info=True)
+        raise DataFetchError(f"Failed to download file from Google Drive: {e}") from e
+    except pd.errors.ParserError as e:
+        logger.error(f"Failed to parse Excel file: {e}", exc_info=True)
+        raise DataProcessingError(f"Invalid Excel file format: {e}") from e
+    except (IOError, OSError) as e:
+        logger.error(f"File I/O error: {e}", exc_info=True)
+        raise DataFetchError(f"File operation failed: {e}") from e
 
 
 def fetch_sheet_data(spreadsheet_id: str, sheet_name: str = 'dashboard') -> List[List[str]]:
@@ -168,8 +191,8 @@ def fetch_sheet_data(spreadsheet_id: str, sheet_name: str = 'dashboard') -> List
         if sheet_name not in sheet_titles and sheets:
             sheet_name = sheet_titles[0]
             logger.warning(f"Requested sheet not found. Using first sheet: {sheet_name}")
-    except Exception as e:
-        logger.warning(f"Could not get metadata: {e}")
+    except HttpError as e:
+        logger.warning(f"Could not get spreadsheet metadata: {e}")
         # Continue anyway with provided sheet_name
 
     # Get the data from the sheet
@@ -261,7 +284,7 @@ def convert_to_eur(df: pd.DataFrame) -> pd.DataFrame:
     exch_rate_row = None
     for idx, row in df.iterrows():
         month_val = str(row['month']).lower()
-        if 'exch' in month_val or 'rate' in month_val or 'eur' in month_val or 'usd' in month_val:
+        if any(keyword in month_val for keyword in EXCHANGE_RATE_KEYWORDS):
             exch_rate_row = row
             logger.info(f"Found exchange rate row: {row['month']}")
             break
@@ -270,14 +293,8 @@ def convert_to_eur(df: pd.DataFrame) -> pd.DataFrame:
         logger.warning("No exchange rate row found. Skipping currency conversion.")
         return df
 
-    # Define which metrics should be converted (currency values)
-    currency_metrics = [
-        'GMV', 'Funded Amount', 'Arrangement Fees', 'Logistic Fees',
-        'Logistic Costs', 'Cargo Insurance Fees', 'Cargo Insurance Costs',
-        'Accrued Interests', 'Cost of Funds (Accrued)', 'Docs Management Fees',
-        'Costs of Docs Delivery', 'Warehouse Destination Fees',
-        'Warehouse Destination Costs', 'Avg Portfolio Outstanding'
-    ]
+    # Use currency metrics from constants
+    currency_metrics = CURRENCY_METRICS
 
     # Get column names (periods)
     period_cols = [col for col in df.columns if col != 'month']
@@ -353,7 +370,8 @@ def prepare_dashboard_json(df_usd: pd.DataFrame, df_eur: pd.DataFrame) -> Dict[s
             try:
                 dt = pd.to_datetime(col)
                 formatted_periods.append(dt.strftime('%b-%y'))
-            except:
+            except (ValueError, TypeError, pd.errors.OutOfBoundsDatetime):
+                # If parsing fails, use the column value as-is
                 formatted_periods.append(col)
         else:
             formatted_periods.append(str(col))
@@ -532,9 +550,15 @@ def main(spreadsheet_id: Optional[str] = None, sheet_name: str = 'dashboard') ->
         logger.info("Dashboard is ready to view at: dashboard/index.html")
         logger.info("=" * 60)
 
-    except Exception as e:
+    except (CredentialsError, DataFetchError, DataProcessingError) as e:
         logger.error(f"Error in data pipeline: {str(e)}", exc_info=True)
         raise
+    except (IOError, OSError) as e:
+        logger.error(f"File I/O error: {str(e)}", exc_info=True)
+        raise DataProcessingError(f"Failed to save output files: {e}") from e
+    except Exception as e:
+        logger.error(f"Unexpected error in data pipeline: {str(e)}", exc_info=True)
+        raise DataProcessingError(f"Pipeline failed: {e}") from e
 
 
 if __name__ == '__main__':
