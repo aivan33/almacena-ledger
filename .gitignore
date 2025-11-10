@@ -96,3 +96,7 @@ htmlcov/
 
 # Build outputs
 dashboard-package/
+
+# Generated reports and presentations
+CODE_REVIEW_REPORT*.md
+MEETING_PRESENTATION.md

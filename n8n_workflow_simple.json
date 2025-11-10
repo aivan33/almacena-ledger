@@ -1,0 +1,139 @@
+{
+  "name": "Almacena Dashboard Auto-Update (Simplified)",
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "Manual Trigger - Run Anytime",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "weeksInterval": 1,
+              "triggerAtDay": 1,
+              "triggerAtHour": 9,
+              "triggerAtMinute": 0
+            }
+          ]
+        }
+      },
+      "name": "Schedule Trigger - Every Monday 9 AM",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [250, 450]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:5000/update-dashboard",
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "name": "Trigger Dashboard Update",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [500, 375]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.status }}",
+              "value2": "success"
+            }
+          ]
+        }
+      },
+      "name": "Check if Update Succeeded",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [750, 375]
+    },
+    {
+      "parameters": {
+        "content": "=✅ Dashboard Updated Successfully!\n\nTimestamp: {{ $now.toFormat('yyyy-MM-dd HH:mm:ss') }}\n\nOutput:\n{{ $('Trigger Dashboard Update').item.json.output }}",
+        "height": 464,
+        "width": 527
+      },
+      "name": "Success",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [980, 240]
+    },
+    {
+      "parameters": {
+        "content": "=❌ Update Failed\n\nError:\n{{ $('Trigger Dashboard Update').item.json.error }}",
+        "height": 299,
+        "width": 386,
+        "color": 3
+      },
+      "name": "Failed",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [980, 480]
+    }
+  ],
+  "connections": {
+    "Manual Trigger - Run Anytime": {
+      "main": [
+        [
+          {
+            "node": "Trigger Dashboard Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger - Every Monday 9 AM": {
+      "main": [
+        [
+          {
+            "node": "Trigger Dashboard Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger Dashboard Update": {
+      "main": [
+        [
+          {
+            "node": "Check if Update Succeeded",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if Update Succeeded": {
+      "main": [
+        [
+          {
+            "node": "Success",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

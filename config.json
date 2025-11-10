@@ -4,8 +4,8 @@
   "sheet_name": "dashboard",
   "credentials_file": "credentials/your-service-account.json",
   "data_settings": {
-    "include_periods_through": "Sep-25",
-    "exclude_periods": ["Oct-25", "Nov-25", "Dec-25"]
+    "include_periods_through": "Oct-25",
+    "exclude_periods": ["Nov-25", "Dec-25"]
   },
   "chart_settings": {
     "gmv_chart": {

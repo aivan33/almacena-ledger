@@ -81,10 +81,10 @@ def update_dashboard() -> Tuple[Response, int]:
             env['GOOGLE_DRIVE_FILE_ID'] = os.environ['GOOGLE_DRIVE_FILE_ID']
             logger.debug(f"Using Google Drive file ID from environment")
 
-        # Run the fetch script
+        # Run the fetch script as a module (required for relative imports)
         logger.info("Executing fetch_from_sheets.py script...")
         result = subprocess.run(
-            ['python', 'scripts/fetch_from_sheets.py'],
+            ['python', '-m', 'scripts.fetch_from_sheets'],
             cwd=os.path.dirname(os.path.abspath(__file__)),
             capture_output=True,
             text=True,
