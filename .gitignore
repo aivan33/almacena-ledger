@@ -100,3 +100,10 @@ dashboard-package/
 # Generated reports and presentations
 CODE_REVIEW_REPORT*.md
 MEETING_PRESENTATION.md
+
+# Documentation files (exclude all .md files except README.md)
+*.md
+!README.md
+!dashboard/README.md
+!tests/README.md
+!examples/README.md
