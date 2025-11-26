@@ -1,0 +1,162 @@
+month,metric,value,original_metric,month_date
+1/1/2025,accrued_interests,51615.69,Accrued Interests,2025-01-01
+1/1/2025,arrangement_fees,48126.23,Arrangement Fees,2025-01-01
+1/1/2025,avg_days_outstanding,18.0,Avg Days Outstanding,2025-01-01
+1/1/2025,avg_portfolio_outstanding,5925534.54,Avg Portfolio Outstanding,2025-01-01
+1/1/2025,cargo_insurance_costs,3670.53,Cargo Insurance Costs,2025-01-01
+1/1/2025,cargo_insurance_fees,4905.45,Cargo Insurance Fees,2025-01-01
+1/1/2025,cash_drag,0.27,Cash Drag,2025-01-01
+1/1/2025,cost_of_funds_accrued,71920.55,Cost of Funds (Accrued),2025-01-01
+1/1/2025,costs_docs_delivery,154.46,Costs of Docs Delivery,2025-01-01
+1/1/2025,docs_management_fees,125.62,Docs Management Fees,2025-01-01
+1/1/2025,funded_amount,10473053.0,Funded Amount,2025-01-01
+1/1/2025,gmv,11763388.0,GMV,2025-01-01
+1/1/2025,gmv_insured_pct,0.14550000000000002,% GMV Insured,2025-01-01
+1/1/2025,logistic_costs,11836.0,Logistic Costs,2025-01-01
+1/1/2025,logistic_fees,11836.0,Logistic Fees,2025-01-01
+1/1/2025,num_boxes,91.0,# Boxes,2025-01-01
+1/1/2025,num_invoices,54.0,# Invoices,2025-01-01
+1/1/2025,usd_eur_rate_eom,0.97,USD to EUR historical Rates (EoM),2025-01-01
+2/1/2025,accrued_interests,68126.93,Accrued Interests,2025-02-01
+2/1/2025,arrangement_fees,52665.27,Arrangement Fees,2025-02-01
+2/1/2025,avg_days_outstanding,18.0,Avg Days Outstanding,2025-02-01
+2/1/2025,avg_portfolio_outstanding,7945675.89,Avg Portfolio Outstanding,2025-02-01
+2/1/2025,cargo_insurance_costs,2495.66,Cargo Insurance Costs,2025-02-01
+2/1/2025,cargo_insurance_fees,2257.18,Cargo Insurance Fees,2025-02-01
+2/1/2025,cash_drag,0.14,Cash Drag,2025-02-01
+2/1/2025,cost_of_funds_accrued,72953.42,Cost of Funds (Accrued),2025-02-01
+2/1/2025,costs_docs_delivery,144.68,Costs of Docs Delivery,2025-02-01
+2/1/2025,docs_management_fees,144.68,Docs Management Fees,2025-02-01
+2/1/2025,funded_amount,12081263.0,Funded Amount,2025-02-01
+2/1/2025,gmv,13150221.0,GMV,2025-02-01
+2/1/2025,gmv_insured_pct,0.08310000000000001,% GMV Insured,2025-02-01
+2/1/2025,logistic_costs,19967.0,Logistic Costs,2025-02-01
+2/1/2025,logistic_fees,19967.0,Logistic Fees,2025-02-01
+2/1/2025,num_boxes,97.0,# Boxes,2025-02-01
+2/1/2025,num_invoices,51.0,# Invoices,2025-02-01
+2/1/2025,usd_eur_rate_eom,0.96,USD to EUR historical Rates (EoM),2025-02-01
+3/1/2025,accrued_interests,48514.58,Accrued Interests,2025-03-01
+3/1/2025,arrangement_fees,28935.35,Arrangement Fees,2025-03-01
+3/1/2025,avg_days_outstanding,27.0,Avg Days Outstanding,2025-03-01
+3/1/2025,avg_portfolio_outstanding,5412096.57,Avg Portfolio Outstanding,2025-03-01
+3/1/2025,cargo_insurance_costs,1143.14,Cargo Insurance Costs,2025-03-01
+3/1/2025,cargo_insurance_fees,1498.85,Cargo Insurance Fees,2025-03-01
+3/1/2025,cash_drag,0.45,Cash Drag,2025-03-01
+3/1/2025,cost_of_funds_accrued,86194.52,Cost of Funds (Accrued),2025-03-01
+3/1/2025,costs_docs_delivery,67.0,Costs of Docs Delivery,2025-03-01
+3/1/2025,docs_management_fees,67.0,Docs Management Fees,2025-03-01
+3/1/2025,funded_amount,6186160.0,Funded Amount,2025-03-01
+3/1/2025,gmv,7042922.0,GMV,2025-03-01
+3/1/2025,gmv_insured_pct,0.0839,% GMV Insured,2025-03-01
+3/1/2025,logistic_costs,5914.0,Logistic Costs,2025-03-01
+3/1/2025,logistic_fees,5566.0,Logistic Fees,2025-03-01
+3/1/2025,num_boxes,47.0,# Boxes,2025-03-01
+3/1/2025,num_invoices,25.0,# Invoices,2025-03-01
+3/1/2025,usd_eur_rate_eom,0.92,USD to EUR historical Rates (EoM),2025-03-01
+4/1/2025,accrued_interests,44217.38,Accrued Interests,2025-04-01
+4/1/2025,arrangement_fees,34743.07,Arrangement Fees,2025-04-01
+4/1/2025,avg_days_outstanding,19.0,Avg Days Outstanding,2025-04-01
+4/1/2025,avg_portfolio_outstanding,4984712.95,Avg Portfolio Outstanding,2025-04-01
+4/1/2025,cargo_insurance_costs,2810.72,Cargo Insurance Costs,2025-04-01
+4/1/2025,cargo_insurance_fees,2944.03,Cargo Insurance Fees,2025-04-01
+4/1/2025,cash_drag,0.27,Cash Drag,2025-04-01
+4/1/2025,cost_of_funds_accrued,55953.42,Cost of Funds (Accrued),2025-04-01
+4/1/2025,costs_docs_delivery,135.9,Costs of Docs Delivery,2025-04-01
+4/1/2025,docs_management_fees,135.9,Docs Management Fees,2025-04-01
+4/1/2025,funded_amount,7889537.0,Funded Amount,2025-04-01
+4/1/2025,gmv,9304591.0,GMV,2025-04-01
+4/1/2025,gmv_insured_pct,0.1379,% GMV Insured,2025-04-01
+4/1/2025,logistic_costs,15645.0,Logistic Costs,2025-04-01
+4/1/2025,logistic_fees,15645.0,Logistic Fees,2025-04-01
+4/1/2025,num_boxes,65.0,# Boxes,2025-04-01
+4/1/2025,num_invoices,41.0,# Invoices,2025-04-01
+4/1/2025,usd_eur_rate_eom,0.88,USD to EUR historical Rates (EoM),2025-04-01
+5/1/2025,accrued_interests,69080.81,Accrued Interests,2025-05-01
+5/1/2025,arrangement_fees,55783.54,Arrangement Fees,2025-05-01
+5/1/2025,avg_days_outstanding,18.0,Avg Days Outstanding,2025-05-01
+5/1/2025,avg_portfolio_outstanding,7212685.79,Avg Portfolio Outstanding,2025-05-01
+5/1/2025,cargo_insurance_costs,4197.91,Cargo Insurance Costs,2025-05-01
+5/1/2025,cargo_insurance_fees,4923.84,Cargo Insurance Fees,2025-05-01
+5/1/2025,cash_drag,0.23,Cash Drag,2025-05-01
+5/1/2025,cost_of_funds_accrued,81410.96,Cost of Funds (Accrued),2025-05-01
+5/1/2025,costs_docs_delivery,271.0,Costs of Docs Delivery,2025-05-01
+5/1/2025,docs_management_fees,271.0,Docs Management Fees,2025-05-01
+5/1/2025,funded_amount,12149450.0,Funded Amount,2025-05-01
+5/1/2025,gmv,13594140.0,GMV,2025-05-01
+5/1/2025,gmv_insured_pct,0.1234,% GMV Insured,2025-05-01
+5/1/2025,logistic_costs,18832.0,Logistic Costs,2025-05-01
+5/1/2025,logistic_fees,18800.0,Logistic Fees,2025-05-01
+5/1/2025,num_boxes,90.0,# Boxes,2025-05-01
+5/1/2025,num_invoices,55.0,# Invoices,2025-05-01
+5/1/2025,usd_eur_rate_eom,0.88,USD to EUR historical Rates (EoM),2025-05-01
+6/1/2025,accrued_interests,64815.09,Accrued Interests,2025-06-01
+6/1/2025,arrangement_fees,45068.85,Arrangement Fees,2025-06-01
+6/1/2025,avg_days_outstanding,22.0,Avg Days Outstanding,2025-06-01
+6/1/2025,avg_portfolio_outstanding,7226822.05,Avg Portfolio Outstanding,2025-06-01
+6/1/2025,cargo_insurance_costs,-40240.78,Cargo Insurance Costs,2025-06-01
+6/1/2025,cargo_insurance_fees,5221.45,Cargo Insurance Fees,2025-06-01
+6/1/2025,cash_drag,0.29,Cash Drag,2025-06-01
+6/1/2025,cost_of_funds_accrued,80713.59,Cost of Funds (Accrued),2025-06-01
+6/1/2025,docs_management_fees,3282.0,Docs Management Fees,2025-06-01
+6/1/2025,funded_amount,9703092.0,Funded Amount,2025-06-01
+6/1/2025,gmv,10970744.0,GMV,2025-06-01
+6/1/2025,gmv_insured_pct,-0.4235,% GMV Insured,2025-06-01
+6/1/2025,handling_warehouse_costs,2779.25,Handling & Warehouse Destination Costs,2025-06-01
+6/1/2025,handling_warehouse_fees,2779.25,Handling & Warehouse Destination Fees,2025-06-01
+6/1/2025,logistic_costs,-16638.0,Logistic Costs,2025-06-01
+6/1/2025,logistic_fees,16638.0,Logistic Fees,2025-06-01
+6/1/2025,num_boxes,71.0,# Boxes,2025-06-01
+6/1/2025,num_invoices,43.0,# Invoices,2025-06-01
+6/1/2025,usd_eur_rate_eom,0.85,USD to EUR historical Rates (EoM),2025-06-01
+7/1/2025,accrued_interests,60110.75,Accrued Interests,2025-07-01
+7/1/2025,arrangement_fees,50298.97,Arrangement Fees,2025-07-01
+7/1/2025,avg_days_outstanding,18.0,Avg Days Outstanding,2025-07-01
+7/1/2025,avg_portfolio_outstanding,6102163.87,Avg Portfolio Outstanding,2025-07-01
+7/1/2025,cargo_insurance_costs,-7864.33,Cargo Insurance Costs,2025-07-01
+7/1/2025,cargo_insurance_fees,3067.76,Cargo Insurance Fees,2025-07-01
+7/1/2025,cash_drag,0.17,Cash Drag,2025-07-01
+7/1/2025,cost_of_funds_accrued,70532.4,Cost of Funds (Accrued),2025-07-01
+7/1/2025,funded_amount,10623270.0,Funded Amount,2025-07-01
+7/1/2025,gmv,12368684.0,GMV,2025-07-01
+7/1/2025,gmv_insured_pct,0.0576,% GMV Insured,2025-07-01
+7/1/2025,handling_warehouse_costs,581.56,Handling & Warehouse Destination Costs,2025-07-01
+7/1/2025,handling_warehouse_fees,581.56,Handling & Warehouse Destination Fees,2025-07-01
+7/1/2025,logistic_costs,5110.0,Logistic Costs,2025-07-01
+7/1/2025,logistic_fees,5110.0,Logistic Fees,2025-07-01
+7/1/2025,num_boxes,88.0,# Boxes,2025-07-01
+7/1/2025,num_invoices,53.0,# Invoices,2025-07-01
+7/1/2025,usd_eur_rate_eom,0.88,USD to EUR historical Rates (EoM),2025-07-01
+8/1/2025,accrued_interests,51098.81,Accrued Interests,2025-08-01
+8/1/2025,arrangement_fees,523369.18,Arrangement Fees,2025-08-01
+8/1/2025,avg_days_outstanding,33.0,Avg Days Outstanding,2025-08-01
+8/1/2025,avg_portfolio_outstanding,5207966.58,Avg Portfolio Outstanding,2025-08-01
+8/1/2025,cargo_insurance_costs,291.8,Cargo Insurance Costs,2025-08-01
+8/1/2025,cargo_insurance_fees,-31073.08,Cargo Insurance Fees,2025-08-01
+8/1/2025,cash_drag,0.31,Cash Drag,2025-08-01
+8/1/2025,cost_of_funds_accrued,60942.83,Cost of Funds (Accrued),2025-08-01
+8/1/2025,costs_docs_delivery,0.0,Costs of Docs Delivery,2025-08-01
+8/1/2025,docs_management_fees,66.0,Docs Management Fees,2025-08-01
+8/1/2025,funded_amount,4823658.27,Funded Amount,2025-08-01
+8/1/2025,gmv,6425027.49,GMV,2025-08-01
+8/1/2025,gmv_insured_pct,-0.1274,% GMV Insured,2025-08-01
+8/1/2025,handling_warehouse_fees,0.0,Handling & Warehouse Destination Fees,2025-08-01
+8/1/2025,logistic_costs,6994.0,Logistic Costs,2025-08-01
+8/1/2025,logistic_fees,6994.0,Logistic Fees,2025-08-01
+8/1/2025,num_boxes,57.0,# Boxes,2025-08-01
+8/1/2025,num_invoices,41.0,# Invoices,2025-08-01
+8/1/2025,usd_eur_rate_eom,0.86,USD to EUR historical Rates (EoM),2025-08-01
+9/1/2025,accrued_interests,31054.59,Accrued Interests,2025-09-01
+9/1/2025,arrangement_fees,42164.06,Arrangement Fees,2025-09-01
+9/1/2025,avg_portfolio_outstanding,5495464.85,Avg Portfolio Outstanding,2025-09-01
+9/1/2025,cargo_insurance_costs,-878.2,Cargo Insurance Costs,2025-09-01
+9/1/2025,cargo_insurance_fees,784.0,Cargo Insurance Fees,2025-09-01
+9/1/2025,costs_docs_delivery,0.0,Costs of Docs Delivery,2025-09-01
+9/1/2025,docs_management_fees,0.0,Docs Management Fees,2025-09-01
+9/1/2025,funded_amount,9114481.16,Funded Amount,2025-09-01
+9/1/2025,gmv,8219202.98,GMV,2025-09-01
+9/1/2025,handling_warehouse_fees,0.0,Handling & Warehouse Destination Fees,2025-09-01
+9/1/2025,logistic_costs,0.0,Logistic Costs,2025-09-01
+9/1/2025,logistic_fees,0.0,Logistic Fees,2025-09-01
+9/1/2025,num_boxes,64.0,# Boxes,2025-09-01
+9/1/2025,num_invoices,44.0,# Invoices,2025-09-01
+9/1/2025,usd_eur_rate_eom,0.86,USD to EUR historical Rates (EoM),2025-09-01

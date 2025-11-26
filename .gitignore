@@ -107,3 +107,17 @@ MEETING_PRESENTATION.md
 !dashboard/README.md
 !tests/README.md
 !examples/README.md
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Node modules (should already be ignored but adding explicitly)
+node_modules/
+**/node_modules/
+
+# Temporary and junk files
+nul
+*.tmp
+*-temp.txt

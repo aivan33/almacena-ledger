@@ -1,0 +1,4 @@
+month,gmv,funded_amount,avg_days_outstanding,num_invoices,num_boxes,boxes_per_invoice,gmv_mom_growth,funded_mom_growth,gmv_ma3,funded_ma3,cumulative_gmv,cumulative_funded,days_performance,quarter,year,month_name,month_label
+2025-01-01,11352846,10107543,18,54,91,1.69,,,11352846.0,10107543.0,11352846,10107543,Excellent,1,2025,January,Jan 25
+2025-02-01,12500000,11200000,19,58,95,1.64,10.104549995657486,10.808333934369617,11926423.0,10653771.5,23852846,21307543,Excellent,1,2025,February,Feb 25
+2025-03-01,13000000,11700000,17,62,98,1.58,4.0000000000000036,4.464285714285721,12284282.0,11002514.333333334,36852846,33007543,Excellent,1,2025,March,Mar 25

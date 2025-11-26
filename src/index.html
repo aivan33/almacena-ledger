@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Almacena Financial Dashboard</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="dashboard-logo">Almacena Dashboard</div>
+            <nav class="dashboard-nav">
+                <div class="currency-switcher">
+                    <button class="currency-btn active" data-currency="EUR">EUR</button>
+                    <button class="currency-btn" data-currency="USD">USD</button>
+                </div>
+                <div class="dashboard-user">
+                    <span id="user-email">Loading...</span>
+                    <span>|</span>
+                    <span id="user-role" class="text-muted">-</span>
+                </div>
+                <button class="btn btn-secondary" id="logout-btn">Logout</button>
+            </nav>
+        </header>
+
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            <div class="container-fluid">
+                <!-- KPI Cards -->
+                <div class="grid grid-4 mb-lg">
+                    <div class="card kpi-card">
+                        <div class="kpi-label">GMV</div>
+                        <div class="kpi-value" id="kpi-gmv">€0</div>
+                        <div class="kpi-change" id="kpi-gmv-change">-</div>
+                    </div>
+
+                    <div class="card kpi-card">
+                        <div class="kpi-label">Funded Amount</div>
+                        <div class="kpi-value" id="kpi-funded">€0</div>
+                        <div class="kpi-change" id="kpi-funded-change">-</div>
+                    </div>
+
+                    <div class="card kpi-card">
+                        <div class="kpi-label">Avg Days Outstanding</div>
+                        <div class="kpi-value" id="kpi-days">0</div>
+                        <div class="kpi-change" id="kpi-days-change">-</div>
+                    </div>
+
+                    <div class="card kpi-card">
+                        <div class="kpi-label"># Invoices</div>
+                        <div class="kpi-value" id="kpi-invoices">0</div>
+                        <div class="kpi-change" id="kpi-invoices-change">-</div>
+                    </div>
+                </div>
+
+                <!-- Main Charts -->
+                <div class="grid grid-2 mb-lg">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">GMV Trend</h3>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="chart-gmv"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Funded Amount Trend</h3>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="chart-funded"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Average Days Outstanding</h3>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="chart-days"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Invoice Count</h3>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="chart-invoices"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Analysis Charts -->
+                <div class="grid grid-2 mb-lg">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Revenue Breakdown</h3>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="chart-revenue-breakdown"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Cost Analysis</h3>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="chart-cost-analysis"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">GMV Insured %</h3>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="chart-gmv-insured"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Portfolio & Cash Drag</h3>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="chart-portfolio"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Table -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">All Metrics</h3>
+                    </div>
+                    <div id="data-table"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script type="module" src="/js/main.js"></script>
+</body>
+</html>

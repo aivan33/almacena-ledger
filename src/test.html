@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Page</title>
+    <link rel="stylesheet" href="/src/css/main.css">
+</head>
+<body>
+    <div style="padding: 2rem;">
+        <h1>Test Page</h1>
+        <p>If you can see this styled properly, CSS is working!</p>
+
+        <div class="card" style="margin-top: 2rem;">
+            <div class="card-header">
+                <h3 class="card-title">Test Card</h3>
+            </div>
+            <p>Card content here</p>
+        </div>
+
+        <button class="btn btn-primary" onclick="alert('JavaScript works!')">
+            Click me to test JavaScript
+        </button>
+    </div>
+
+    <script>
+        console.log('Test page loaded successfully');
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM ready');
+        });
+    </script>
+</body>
+</html>

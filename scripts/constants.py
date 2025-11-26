@@ -103,3 +103,28 @@ WEBHOOK_TIMEOUT = 300  # 5 minutes in seconds
 
 # Flask configuration
 FLASK_DEBUG = False
+
+# Database Configuration
+import os
+DATABASE_URL = os.getenv('DATABASE_URL', 'sqlite:///dashboard.db')
+
+# Authentication Constants
+TOKEN_EXPIRY_HOURS = 24
+MAX_LOGIN_ATTEMPTS = 5
+ACCOUNT_LOCKOUT_MINUTES = 15
+JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'CHANGE_THIS_IN_PRODUCTION')
+JWT_ALGORITHM = 'HS256'
+
+# Password Requirements
+MIN_PASSWORD_LENGTH = 8
+PASSWORD_REQUIRE_UPPERCASE = True
+PASSWORD_REQUIRE_NUMBER = True
+PASSWORD_REQUIRE_SPECIAL = True
+
+# Rate Limiting
+RATE_LIMITS = {
+    'login': '5 per minute',
+    'api_default': '10 per minute',
+    'webhook': '1 per minute',
+    'health': '60 per minute'
+}

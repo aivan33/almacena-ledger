@@ -39,3 +39,28 @@ class ExportError(DashboardError):
 class ValidationError(DashboardError):
     """Raised when data validation fails."""
     pass
+
+
+class AuthenticationError(DashboardError):
+    """Raised when authentication fails (invalid credentials, etc.)."""
+    pass
+
+
+class AuthorizationError(DashboardError):
+    """Raised when user lacks permission for an action."""
+    pass
+
+
+class SessionExpiredError(AuthenticationError):
+    """Raised when session token has expired."""
+    pass
+
+
+class AccountLockedError(AuthenticationError):
+    """Raised when account is locked due to failed login attempts."""
+    pass
+
+
+class PermissionDeniedError(AuthorizationError):
+    """Raised when user attempts unauthorized action."""
+    pass
