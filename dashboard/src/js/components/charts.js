@@ -90,11 +90,20 @@ export function renderCharts(container, data) {
     console.log('Rendering charts with currency:', state.currency);
 
     container.innerHTML = `
-        <h2 class="section-title">Performance Analytics</h2>
         <div class="charts-grid">
-            <div class="chart-container full-width large">
-                <div class="chart-title">GMV vs Funded Amount Trend</div>
-                <div class="chart-subtitle">Tracks relationship between total GMV and funded amount over time</div>
+            <div id="gmvChartContainer" class="chart-container full-width large">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
+                    <div>
+                        <div class="chart-title">GMV vs Funded Amount Trend</div>
+                        <div class="chart-subtitle">Tracks relationship between total GMV and funded amount over time</div>
+                    </div>
+                    <button id="gmvLayoutToggle" class="chart-layout-toggle" title="Toggle chart width">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2"/>
+                            <line x1="9" y1="3" x2="9" y2="21"/>
+                        </svg>
+                    </button>
+                </div>
                 <div class="chart-wrapper">
                     <canvas id="gmvFundedChart"></canvas>
                 </div>
@@ -149,6 +158,20 @@ export function renderCharts(container, data) {
     createPortfolioHealthChart(data, state);
     createCashDragChart(data, state);
     createOperationalChart(data, state);
+
+    // Add toggle functionality for GMV chart layout
+    const toggleBtn = document.getElementById('gmvLayoutToggle');
+    const chartContainer = document.getElementById('gmvChartContainer');
+    if (toggleBtn && chartContainer) {
+        toggleBtn.addEventListener('click', () => {
+            const isCompact = chartContainer.classList.toggle('compact');
+            toggleBtn.classList.toggle('active', isCompact);
+            // Trigger chart resize
+            if (chartInstances.gmvFunded) {
+                chartInstances.gmvFunded.resize();
+            }
+        });
+    }
 }
 
 function createGMVFundedChart(data, state) {
@@ -173,7 +196,11 @@ function createGMVFundedChart(data, state) {
                     fill: true,
                     tension: 0.4,
                     pointRadius: 5,
-                    pointHoverRadius: 7
+                    pointHoverRadius: 7,
+                    datalabels: {
+                        align: 'top',
+                        anchor: 'end'
+                    }
                 },
                 {
                     label: 'Funded Amount',
@@ -184,18 +211,48 @@ function createGMVFundedChart(data, state) {
                     fill: true,
                     tension: 0.4,
                     pointRadius: 5,
-                    pointHoverRadius: 7
+                    pointHoverRadius: 7,
+                    datalabels: {
+                        align: 'bottom',
+                        anchor: 'end'
+                    }
                 }
             ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            layout: {
+                padding: {
+                    top: 20,
+                    bottom: 20,
+                    left: 10,
+                    right: 10
+                }
+            },
             plugins: {
-                datalabels: getLineChartLabelsConfig(
-                    (value) => value ? formatCurrency(value, currency, 1) : '',
-                    periods.length
-                ),
+                datalabels: {
+                    display: (context) => {
+                        // Show labels only for first, last, and every other point if more than 5 points
+                        const index = context.dataIndex;
+                        const dataLength = periods.length;
+                        if (dataLength <= 5) return true;
+                        if (dataLength <= 7) return index === 0 || index === dataLength - 1 || index === Math.floor(dataLength / 2);
+                        return index === 0 || index === dataLength - 1 || index % 2 === 0;
+                    },
+                    offset: 6,
+                    clamp: true,
+                    clip: false,
+                    formatter: (value) => value ? formatCurrency(value, currency, 1) : '',
+                    font: {
+                        size: 11,
+                        weight: '500'
+                    },
+                    color: '#374151',
+                    backgroundColor: 'rgba(255, 255, 255, 0.92)',
+                    borderRadius: 4,
+                    padding: { top: 3, bottom: 3, left: 5, right: 5 }
+                },
                 legend: {
                     ...getCommonLegendConfig(),
                     labels: {

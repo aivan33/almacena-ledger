@@ -202,6 +202,42 @@
             height: 550px;
         }
 
+        .chart-container.compact {
+            grid-column: 1 / -1;
+            width: 67%;
+            margin: 0 auto;
+        }
+
+        .chart-layout-toggle {
+            padding: 8px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            background: #ffffff;
+            color: #6b7280;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .chart-layout-toggle:hover {
+            border-color: #013E3F;
+            color: #013E3F;
+            background: rgba(1, 62, 63, 0.05);
+        }
+
+        .chart-layout-toggle.active {
+            background: #013E3F;
+            color: #ffffff;
+            border-color: #013E3F;
+        }
+
+        .chart-layout-toggle svg {
+            display: block;
+        }
+
         .chart-title {
             font-size: 16px;
             margin-bottom: 4px;

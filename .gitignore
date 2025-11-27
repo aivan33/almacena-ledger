@@ -101,12 +101,11 @@ dashboard-package/
 CODE_REVIEW_REPORT*.md
 MEETING_PRESENTATION.md
 
-# Documentation files (exclude all .md files except README.md)
+# Documentation files (exclude all .md files in dashboard except README.md)
+# Note: Relative paths only affect dashboard directory
 *.md
 !README.md
-!dashboard/README.md
-!tests/README.md
-!examples/README.md
+!**/README.md
 
 # Database files
 *.db
@@ -121,3 +120,6 @@ node_modules/
 nul
 *.tmp
 *-temp.txt
+
+# Claude Code directory (not required for dashboard operation)
+.claude/
